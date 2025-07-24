@@ -84,13 +84,11 @@ def handle_buttons(message):
 def repeat_text(message):
     text = message.text
     repeated = "\n".join([text]*5)
-    bot.send_message(message.chat.id, repeated)
+    bot.send_message(message.chat.id, repeated
 
 # اجرای اپلیکیشن
 if __name__ == "__main__":
+    import os
     bot.remove_webhook()
     bot.set_webhook(url=f"https://{os.environ['RENDER_EXTERNAL_HOSTNAME']}/{API_TOKEN}")
     app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
-
-
-
