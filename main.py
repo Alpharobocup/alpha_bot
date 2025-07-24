@@ -1,7 +1,7 @@
 import telebot, jdatetime, requests, json, datetime
 from flask import Flask, request
 
-API_TOKEN = '7918282843:AAFR3gZebQoctyMOcvI8L3cI5jZZcD0kOxo'
+API_TOKEN = '7918282843:AAFR3gZebQoctyMOcvI8L3cI5jZZcD0kOx'
 bot = telebot.TeleBot(API_TOKEN)
 WEBHOOK_HOST = 'https://alpha-bot-zkn3.onrender.com'
 WEBHOOK_PATH = f'/bot{API_TOKEN}'
