@@ -99,7 +99,7 @@ def mute_user(msg):
 @bot.message_handler(commands=["start"])
 def start(msg):
     markup = types.InlineKeyboardMarkup()
-    add_btn = types.InlineKeyboardButton("➕ افزودن به گروه", url=f"https://t.me/YourBotUsername?startgroup=true")
+    add_btn = types.InlineKeyboardButton("➕ افزودن به گروه", url=f"https://t.me/Emad20244bot?startgroup=true")
     markup.add(add_btn)
     bot.send_message(msg.chat.id, "🤖 سلام! من ربات گروه شما هستم. لطفاً منو تو گروه ادمین کنید.", reply_markup=markup)
 
