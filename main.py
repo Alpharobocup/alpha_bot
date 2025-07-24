@@ -4,44 +4,70 @@ import telebot
 from telebot import types
 
 API_TOKEN = '7918282843:AAFR3gZebQoctyMOcvI8L3cI5jZZcD0kOxo'
-WEBHOOK_HOST = 'https://alpha-bot-zkn3.onrender.com'  # مثلا 
+WEBHOOK_HOST = 'https://alpha-bot-zkn3.onrender.com'
 WEBHOOK_PATH = f'/{API_TOKEN}'
 WEBHOOK_URL = f'{WEBHOOK_HOST}{WEBHOOK_PATH}'
 
 bot = telebot.TeleBot(API_TOKEN)
 
-# ذخیره وضعیت تکرار جمله برای هر چت
+# وضعیت‌ها
 repeat_mode = {}
-# ذخیره وضعیت صفحه به‌زودی برای هر چت
 soon_menu_mode = {}
 
+# منوی شروع
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    soon_menu_mode[message.chat.id] = False  # اطمینان از حالت اولیه منو
+    soon_menu_mode[message.chat.id] = False
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton("🧾 درباره ربات")
-    btn2 = types.KeyboardButton("➕ افزودن به گروه")
-    btn3 = types.KeyboardButton("🔁 تکرار جمله")
-    btn4 = types.KeyboardButton("⏳ به‌زودی...")
-    markup.add(btn1, btn2)
-    markup.add(btn3, btn4)
+    markup.add(
+        types.KeyboardButton("🧾 درباره ربات"),
+        types.KeyboardButton("➕ افزودن به گروه"),
+    )
+    markup.add(
+        types.KeyboardButton("🔁 تکرار جمله"),
+        types.KeyboardButton("⏳ به‌زودی...")
+    )
     bot.send_message(message.chat.id, "سلام! یکی از گزینه‌ها رو انتخاب کن 👇", reply_markup=markup)
 
+# جستجوی گوگل
+@bot.message_handler(commands=['google'])
+def google_search(message):
+    query = message.text.replace('/google', '').strip()
+    if query:
+        link = f"https://www.google.com/search?q={query.replace(' ', '+')}"
+        bot.reply_to(message, f"🔍 نتیجه جستجو:\n{link}")
+    else:
+        bot.reply_to(message, "❗ لطفاً بعد از /google عبارت مورد نظر رو بنویس.")
+
+# خوش‌آمدگویی اعضای جدید
+@bot.message_handler(content_types=['new_chat_members'])
+def welcome_new_member(message):
+    for new_member in message.new_chat_members:
+        name = f"[{new_member.first_name}](tg://user?id={new_member.id})"
+        bot.send_message(message.chat.id, f"🎉 خوش اومدی {name}!", parse_mode="Markdown")
+
+# حذف پیام‌های سیستمی (کاربر رفت / گروه تغییر کرد و...)
+@bot.message_handler(content_types=['left_chat_member', 'new_chat_title', 'new_chat_photo', 'delete_chat_photo', 'group_chat_created'])
+def delete_system_messages(message):
+    try:
+        bot.delete_message(message.chat.id, message.message_id)
+    except:
+        pass  # اگر حذف نشد، نادیده بگیر
+
+# مدیریت دکمه‌ها و منو
 @bot.message_handler(func=lambda message: True)
 def handle_buttons(message):
     chat_id = message.chat.id
 
-    # اگر در حالت تکرار جمله باشیم و پیام معمولیه
+    # تکرار جمله
     if repeat_mode.get(chat_id, False):
-        text = message.text
-        repeated = "\n".join([text]*5)
+        repeated = "\n".join([message.text] * 5)
         bot.send_message(chat_id, repeated)
         repeat_mode[chat_id] = False
         return
 
-    # اگر در حالت منوی به زودی هستیم
+    # حالت "به‌زودی..."
     if soon_menu_mode.get(chat_id, False):
-        # 4 دکمه جدید برای این صفحه:
         if message.text == "گزینه ۱":
             bot.send_message(chat_id, "تو گزینه ۱ رو زدی!")
         elif message.text == "گزینه ۲":
@@ -50,42 +76,45 @@ def handle_buttons(message):
             bot.send_message(chat_id, "تو گزینه ۳ رو زدی!")
         elif message.text == "بازگشت":
             soon_menu_mode[chat_id] = False
-            send_welcome(message)  # برگشت به منوی اصلی
+            send_welcome(message)
         else:
-            bot.send_message(chat_id, "لطفاً یکی از گزینه‌ها رو انتخاب کن یا روی «بازگشت» بزن.")
+            bot.send_message(chat_id, "لطفاً یکی از گزینه‌ها رو انتخاب کن یا «بازگشت» رو بزن.")
         return
 
     # منوی اصلی
     if message.text == "🧾 درباره ربات":
-        bot.send_message(chat_id, "این ربات ساده برای پاسخ‌گویی اولیه و تست ساخته شده توسط تیم آلفا ✨")
+        bot.send_message(chat_id, "این ربات ساده توسط تیم آلفا ساخته شده ✨")
     elif message.text == "➕ افزودن به گروه":
         keyboard = types.InlineKeyboardMarkup()
-        url_button = types.InlineKeyboardButton(
-            text="افزودن ربات به گروه",
+        btn = types.InlineKeyboardButton(
+            "افزودن ربات به گروه",
             url=f"https://t.me/{bot.get_me().username}?startgroup=true"
         )
-        keyboard.add(url_button)
-        bot.send_message(message.chat.id, "برای افزودن ربات به گروه، روی دکمه زیر بزن:", reply_markup=keyboard)
+        keyboard.add(btn)
+        bot.send_message(chat_id, "روی دکمه زیر بزن:", reply_markup=keyboard)
     elif message.text == "🔁 تکرار جمله":
-        bot.send_message(chat_id, "جمله‌ای بفرست تا ۵ بار برات تکرارش کنم.")
+        bot.send_message(chat_id, "جمله‌ای بفرست تا ۵ بار تکرارش کنم.")
         repeat_mode[chat_id] = True
     elif message.text == "⏳ به‌زودی...":
         soon_menu_mode[chat_id] = True
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        btn_a = types.KeyboardButton("گزینه ۱")
-        btn_b = types.KeyboardButton("گزینه ۲")
-        btn_c = types.KeyboardButton("گزینه ۳")
-        btn_back = types.KeyboardButton("بازگشت")
-        markup.add(btn_a, btn_b)
-        markup.add(btn_c, btn_back)
-        bot.send_message(chat_id, "شما وارد صفحه جدید شدید، یکی از گزینه‌ها رو انتخاب کنید:", reply_markup=markup)
+        markup.add(
+            types.KeyboardButton("گزینه ۱"),
+            types.KeyboardButton("گزینه ۲")
+        )
+        markup.add(
+            types.KeyboardButton("گزینه ۳"),
+            types.KeyboardButton("بازگشت")
+        )
+        bot.send_message(chat_id, "صفحه جدید، یکی از گزینه‌ها رو بزن 👇", reply_markup=markup)
     else:
-        bot.send_message(chat_id, "لطفاً یکی از دکمه‌ها رو بزن :)")
+        bot.send_message(chat_id, "❗ لطفاً یکی از دکمه‌ها رو انتخاب کن.")
 
 # تنظیم وب‌هوک
 bot.remove_webhook()
 bot.set_webhook(url=WEBHOOK_URL)
 
+# هندلر وب‌هوک
 class WebhookHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == WEBHOOK_PATH:
@@ -99,6 +128,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
+# اجرا
 PORT = int(os.environ.get('PORT', 8443))
 
 if __name__ == '__main__':
