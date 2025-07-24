@@ -12,9 +12,12 @@ bot = telebot.TeleBot(API_TOKEN)
 
 # ذخیره وضعیت تکرار جمله برای هر چت
 repeat_mode = {}
+# ذخیره وضعیت صفحه به‌زودی برای هر چت
+soon_menu_mode = {}
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    soon_menu_mode[message.chat.id] = False  # اطمینان از حالت اولیه منو
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("🧾 درباره ربات")
     btn2 = types.KeyboardButton("➕ افزودن به گروه")
@@ -36,15 +39,41 @@ def handle_buttons(message):
         repeat_mode[chat_id] = False
         return
 
+    # اگر در حالت منوی به زودی هستیم
+    if soon_menu_mode.get(chat_id, False):
+        # 4 دکمه جدید برای این صفحه:
+        if message.text == "گزینه ۱":
+            bot.send_message(chat_id, "تو گزینه ۱ رو زدی!")
+        elif message.text == "گزینه ۲":
+            bot.send_message(chat_id, "تو گزینه ۲ رو زدی!")
+        elif message.text == "گزینه ۳":
+            bot.send_message(chat_id, "تو گزینه ۳ رو زدی!")
+        elif message.text == "بازگشت":
+            soon_menu_mode[chat_id] = False
+            send_welcome(message)  # برگشت به منوی اصلی
+        else:
+            bot.send_message(chat_id, "لطفاً یکی از گزینه‌ها رو انتخاب کن یا روی «بازگشت» بزن.")
+        return
+
+    # منوی اصلی
     if message.text == "🧾 درباره ربات":
         bot.send_message(chat_id, "این ربات ساده برای پاسخ‌گویی اولیه و تست ساخته شده توسط تیم آلفا ✨")
     elif message.text == "➕ افزودن به گروه":
-        bot.send_message(chat_id, f"برای افزودن ربات به گروه از این لینک استفاده کن:\nhttps://t.me/{bot.get_me().username}?startgroup=true")
+        # فقط ارسال مستقیم لینک اضافه کردن ربات به گروه:
+        bot.send_message(chat_id, f"برای افزودن ربات به گروه، روی لینک زیر کلیک کن:\nhttps://t.me/{bot.get_me().username}?startgroup=true")
     elif message.text == "🔁 تکرار جمله":
         bot.send_message(chat_id, "جمله‌ای بفرست تا ۵ بار برات تکرارش کنم.")
         repeat_mode[chat_id] = True
     elif message.text == "⏳ به‌زودی...":
-        bot.send_message(chat_id, "این قابلیت به‌زودی فعال خواهد شد 😉")
+        soon_menu_mode[chat_id] = True
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn_a = types.KeyboardButton("گزینه ۱")
+        btn_b = types.KeyboardButton("گزینه ۲")
+        btn_c = types.KeyboardButton("گزینه ۳")
+        btn_back = types.KeyboardButton("بازگشت")
+        markup.add(btn_a, btn_b)
+        markup.add(btn_c, btn_back)
+        bot.send_message(chat_id, "شما وارد صفحه جدید شدید، یکی از گزینه‌ها رو انتخاب کنید:", reply_markup=markup)
     else:
         bot.send_message(chat_id, "لطفاً یکی از دکمه‌ها رو بزن :)")
 
