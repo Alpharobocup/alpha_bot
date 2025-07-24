@@ -143,10 +143,13 @@ def check_add(msg):
             bot.send_message(chat_id, "⛔️ اول یک نفر را ادد کن تا بتوانی پیام بدهی!")
 
 # --- وب‌هوک Flask ---
-@app.route('/', methods=['POST'])
+@app.route(f"/{API_TOKEN}", methods=["POST"])
 def webhook():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return 'ok', 200
+    json_string = request.get_data().decode("utf-8")
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return "!", 200
+
 
 @app.route('/', methods=['GET'])
 def index():
@@ -154,7 +157,8 @@ def index():
 
 # --- تنظیم وب‌هوک ---
 bot.remove_webhook()
-bot.set_webhook(url=WEBHOOK_URL)
+bot.set_webhook(url=f"https://alpha-bot-zkn3.onrender.com/{API_TOKEN}")
+
 
 # --- اجرا ---
 if __name__ == '__main__':
