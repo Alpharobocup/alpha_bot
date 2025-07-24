@@ -1,124 +1,158 @@
-import os
-import telebot
-from telebot import types
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from datetime import datetime
-import jdatetime
-import requests
+import telebot, jdatetime, requests, json, datetime
+from flask import Flask, request
 
-API_TOKEN = '7918282843:AAFR3gZebQoctyMOcvI8L3cI5jZZcD0kOxo'
-WEBHOOK_HOST = 'https://alpha-bot-zkn3.onrender.com'
-WEBHOOK_PATH = f"/{API_TOKEN}"
-WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
-
+API_TOKEN = '7918282843:AAFR3gZebQoctyMOcvI8L3cI5jZZcD0kOx'
 bot = telebot.TeleBot(API_TOKEN)
+WEBHOOK_URL = 'https://alpha-bot-zkn3.onrender.com/'  # آدرس دقیق خودت رو بزن
 
-# دکمه‌های منوی اصلی
-def main_menu():
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.row("✨ بزودی", "جستجوی گوگل 🔎")
-    return markup
+app = Flask(__name__)
+group_settings = {}
 
-# دکمه‌های منوی بزودی
-def upcoming_menu():
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.row("📆 تقویم ایرانی", "☀️ اوقات شرعی")
-    markup.row("🔄 تبدیل تاریخ", "😂 جوک بامزه")
-    markup.row("📝 شعر تصادفی", "🆔 کارت ملی")
-    markup.row("↩️ بازگشت")
-    return markup
+# ذخیره تنظیمات برای هر گروه
+def get_group(chat_id):
+    if chat_id not in group_settings:
+        group_settings[chat_id] = {
+            'owner_id': None,
+            'greet_enabled': True,
+            'require_add': True
+        }
+    return group_settings[chat_id]
 
-# خوش‌آمدگویی
+# --- شروع ---
+
 @bot.message_handler(commands=['start'])
-def send_welcome(message):
-    bot.reply_to(message, "سلام! خوش اومدی 🌟", reply_markup=main_menu())
+def start(msg):
+    bot.reply_to(msg, "🤖 ربات فعال شد. لطفاً در گروه ادمینم کن تا بتونم کار کنم.")
 
-# مدیریت پیام‌های کاربر
-@bot.message_handler(func=lambda m: True)
-def handle_message(message):
-    text = message.text
+# --- شناسایی مالک گروه ---
+@bot.message_handler(func=lambda m: m.chat.type in ['group', 'supergroup'])
+def group_init(msg):
+    chat_id = msg.chat.id
+    setting = get_group(chat_id)
+    if setting['owner_id'] is None:
+        admins = bot.get_chat_administrators(chat_id)
+        for admin in admins:
+            if admin.status == 'creator':
+                setting['owner_id'] = admin.user.id
+                bot.send_message(chat_id, f"👑 مالک گروه شناسایی شد: {admin.user.first_name}")
+                break
 
-    if text == "✨ بزودی":
-        bot.send_message(message.chat.id, "قابلیت‌های جدید:", reply_markup=upcoming_menu())
-
-    elif text == "↩️ بازگشت":
-        bot.send_message(message.chat.id, "بازگشت به منوی اصلی:", reply_markup=main_menu())
-
-    elif text == "📆 تقویم ایرانی":
-        today = jdatetime.date.today().strftime("%A %d %B %Y")
-        bot.send_message(message.chat.id, f"📆 امروز: {today}")
-
-    elif text == "☀️ اوقات شرعی":
-        # پیش‌فرض شهر تهران (برای ساده‌سازی)
-        response = requests.get("https://api.keybit.ir/time/")
-        if response.ok:
-            data = response.json()
-            sunrise = data['data']['sunrise']
-            sunset = data['data']['sunset']
-            bot.send_message(message.chat.id, f"☀️ طلوع: {sunrise}\n🌙 غروب: {sunset}")
-        else:
-            bot.send_message(message.chat.id, "❌ خطا در دریافت اوقات شرعی")
-
-    elif text == "🔄 تبدیل تاریخ":
-        now = datetime.now()
-        j_now = jdatetime.date.fromgregorian(date=now)
-        bot.send_message(message.chat.id, f"تاریخ شمسی: {j_now.strftime('%A %d %B %Y')}")
-
-    elif text == "😂 جوک بامزه":
-        res = requests.get("https://api.codebazan.ir/jok/")
-        bot.send_message(message.chat.id, res.text)
-
-    elif text == "📝 شعر تصادفی":
-        res = requests.get("https://api.codebazan.ir/poem/")
-        bot.send_message(message.chat.id, res.text)
-
-    elif text == "🆔 کارت ملی":
-        bot.send_message(message.chat.id, "عدد ۱۰ رقمی کارت ملی رو بفرست... (درحال ساخت)")
-
-    elif text.startswith("جستجوی گوگل") or text.startswith("🔎"):
-        query = text.replace("جستجوی گوگل", "").replace("🔎", "").strip()
-        if not query:
-            bot.send_message(message.chat.id, "متن مورد نظر برای جستجو رو بنویس بعد از این دکمه!")
-        else:
-            bot.send_message(message.chat.id, f"🔗 https://www.google.com/search?q={query.replace(' ', '+')}")
-
-# خوش‌آمدگویی هنگام اضافه شدن به گروه
+# --- خوش‌آمدگویی ---
 @bot.chat_member_handler()
-def welcome_member(update: types.ChatMemberUpdated):
-    new_member = update.new_chat_member.user
-    if update.new_chat_member.status == "member":
-        name = new_member.first_name
-        uid = new_member.id
-        mention = f"[{name}](tg://user?id={uid})"
-        bot.send_message(update.chat.id, f"🎉 خوش اومدی {mention}!", parse_mode="Markdown")
+def greet_user(event):
+    chat_id = event.chat.id
+    setting = get_group(chat_id)
+    if setting['greet_enabled'] and event.new_chat_member:
+        user = event.new_chat_member.user
+        name = f"[{user.first_name}](tg://user?id={user.id})" if user.username is None else f"@{user.username}"
+        bot.send_message(chat_id, f"🎉 به گروه خوش آمدی {name}!", parse_mode="Markdown")
 
-# حذف پیام‌های سیستمی ورود/خروج/تغییرات
+# --- حذف پیام‌های سیستمی ---
 @bot.message_handler(content_types=['new_chat_members', 'left_chat_member'])
-def delete_system_messages(message):
+def delete_sys_msg(msg):
     try:
-        bot.delete_message(message.chat.id, message.message_id)
+        bot.delete_message(msg.chat.id, msg.message_id)
     except:
         pass
 
-# تنظیم وب‌هوک
+# --- جستجوی گوگل ---
+@bot.message_handler(commands=['google'])
+def google_search(msg):
+    query = msg.text.split(' ', 1)
+    if len(query) == 2:
+        q = query[1]
+        link = f"https://www.google.com/search?q={q.replace(' ', '+')}"
+        bot.reply_to(msg, f"🔍 نتیجه جستجو:\n{link}")
+    else:
+        bot.reply_to(msg, "استفاده: /google سوال شما")
+
+# --- منوی بزودی ---
+@bot.message_handler(commands=['be_zoodi'])
+def be_zoodi(msg):
+    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btns = ['📅 تقویم امروز', '🕋 اوقات شرعی', '📜 شعر', '😂 جوک']
+    markup.add(*btns)
+    bot.send_message(msg.chat.id, "💡 قابلیت‌های جدید:", reply_markup=markup)
+
+@bot.message_handler(func=lambda m: m.text == '📅 تقویم امروز')
+def show_date(msg):
+    today = jdatetime.date.today()
+    bot.send_message(msg.chat.id, f"📅 تاریخ امروز: {today.strftime('%A %Y/%m/%d')}")
+
+@bot.message_handler(func=lambda m: m.text == '🕋 اوقات شرعی')
+def show_azan(msg):
+    city = "Tehran"
+    try:
+        res = requests.get(f"https://api.keybit.ir/owghat/?city={city}")
+        data = res.json()
+        bot.send_message(msg.chat.id, f"🌅 طلوع: {data['Sunrise']}\n🌇 غروب: {data['Sunset']}")
+    except:
+        bot.send_message(msg.chat.id, "❌ دریافت اطلاعات ناموفق بود")
+
+@bot.message_handler(func=lambda m: m.text == '😂 جوک')
+def joke(msg):
+    bot.send_message(msg.chat.id, "😂 یه جوک: چرا کامپیوتر خسته نمیشه؟ چون همیشه ریفرش میشه!")
+
+@bot.message_handler(func=lambda m: m.text == '📜 شعر')
+def poem(msg):
+    bot.send_message(msg.chat.id, "📜 شعری زیبا:\nبه نام خداوند جان و خرد،\nکزین برتر اندیشه برنگذرد.")
+
+# --- پاسخ مناسبتی (مثلاً روز برنامه‌نویس) ---
+def send_special_messages():
+    now = jdatetime.date.today()
+    if now.month == 6 and now.day == 13:
+        for chat_id in group_settings:
+            bot.send_message(chat_id, "💻 روز برنامه‌نویس مبارک! 👨‍💻👩‍💻")
+
+# --- حذف با ریپلای + حذف ---
+@bot.message_handler(func=lambda m: m.reply_to_message and m.text.lower() == 'حذف')
+def kick_user(msg):
+    try:
+        user_id = msg.reply_to_message.from_user.id
+        bot.kick_chat_member(msg.chat.id, user_id)
+        bot.send_message(msg.chat.id, "❌ کاربر حذف شد.")
+    except:
+        bot.send_message(msg.chat.id, "⚠️ خطا در حذف کاربر.")
+
+# --- سکوت دادن با عدد ---
+@bot.message_handler(func=lambda m: m.reply_to_message and m.text.lower().startswith('سکوت'))
+def silence_user(msg):
+    try:
+        parts = msg.text.split()
+        seconds = int(parts[1]) * 60
+        user_id = msg.reply_to_message.from_user.id
+        until = datetime.datetime.now() + datetime.timedelta(seconds=seconds)
+        bot.restrict_chat_member(msg.chat.id, user_id, until_date=until)
+        bot.send_message(msg.chat.id, f"🔇 کاربر تا {seconds//60} دقیقه در سکوت است.")
+    except:
+        bot.send_message(msg.chat.id, "⚠️ خطا در سکوت دادن.")
+
+# --- اجبار به ادد ---
+@bot.message_handler(func=lambda m: True)
+def check_add(msg):
+    chat_id = msg.chat.id
+    setting = get_group(chat_id)
+    if setting.get("require_add") and msg.from_user.id != setting["owner_id"]:
+        member_count = bot.get_chat_member_count(chat_id)
+        user_status = bot.get_chat_member(chat_id, msg.from_user.id)
+        if user_status.status == 'member':
+            bot.delete_message(chat_id, msg.message_id)
+            bot.send_message(chat_id, "⛔️ اول یک نفر را ادد کن تا بتوانی پیام بدهی!")
+
+# --- وب‌هوک Flask ---
+@app.route('/', methods=['POST'])
+def webhook():
+    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return 'ok', 200
+
+@app.route('/', methods=['GET'])
+def index():
+    return 'ربات روشنه.'
+
+# --- تنظیم وب‌هوک ---
 bot.remove_webhook()
 bot.set_webhook(url=WEBHOOK_URL)
 
-# وب‌سرور برای وب‌هوک
-class WebhookHandler(BaseHTTPRequestHandler):
-    def do_POST(self):
-        if self.path == WEBHOOK_PATH:
-            content_length = int(self.headers['Content-Length'])
-            body = self.rfile.read(content_length)
-            update = telebot.types.Update.de_json(body.decode("utf-8"))
-            bot.process_new_updates([update])
-            self.send_response(200)
-            self.end_headers()
-        else:
-            self.send_response(404)
-            self.end_headers()
-
-PORT = int(os.environ.get('PORT', 8443))
-with HTTPServer(("", PORT), WebhookHandler) as server:
-    print(f"✅ ربات در پورت {PORT} اجرا شد...")
-    server.serve_forever()
+# --- اجرا ---
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)
