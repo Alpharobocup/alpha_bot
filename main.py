@@ -29,7 +29,7 @@ dares = [
 ]
 
 # وقتی کاربر نوشت /truthordare
-@bot.message_handler(commands=['truthordare'])
+@bot.message_handler(commands=['jorat'])
 def truth_or_dare(message):
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.row("جرئت 💪", "حقیقت 🧠")
