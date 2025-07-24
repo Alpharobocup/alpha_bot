@@ -59,8 +59,13 @@ def handle_buttons(message):
     if message.text == "🧾 درباره ربات":
         bot.send_message(chat_id, "این ربات ساده برای پاسخ‌گویی اولیه و تست ساخته شده توسط تیم آلفا ✨")
     elif message.text == "➕ افزودن به گروه":
-        # فقط ارسال مستقیم لینک اضافه کردن ربات به گروه:
-        bot.send_message(chat_id, f"برای افزودن ربات به گروه، روی لینک زیر کلیک کن:\nhttps://t.me/{bot.get_me().username}?startgroup=true")
+        keyboard = types.InlineKeyboardMarkup()
+        url_button = types.InlineKeyboardButton(
+            text="افزودن ربات به گروه",
+            url=f"https://t.me/{bot.get_me().username}?startgroup=true"
+        )
+        keyboard.add(url_button)
+        bot.send_message(message.chat.id, "برای افزودن ربات به گروه، روی دکمه زیر بزن:", reply_markup=keyboard)
     elif message.text == "🔁 تکرار جمله":
         bot.send_message(chat_id, "جمله‌ای بفرست تا ۵ بار برات تکرارش کنم.")
         repeat_mode[chat_id] = True
