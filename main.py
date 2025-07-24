@@ -84,7 +84,7 @@ def handle_buttons(message):
 def repeat_text(message):
     text = message.text
     repeated = "\n".join([text]*5)
-    bot.send_message(message.chat.id, repeated
+    bot.send_message(message.chat.id, repeated)
 
 # اجرای اپلیکیشن
 if __name__ == "__main__":
