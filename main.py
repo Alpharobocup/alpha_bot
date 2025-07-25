@@ -68,22 +68,24 @@ def menu_handler(message):
         coins = user_coins.get(user_id, 0)
         bot.send_message(chat_id, f"💰 تعداد سکه‌های شما: {coins}", reply_markup=main_menu())
 
-    elif text == "📞 ارتباط با مدیریت":
-        bot.send_message(chat_id, "در حال ارسال پیام به مدیریت...", reply_markup=main_menu())
-
+    elif @bot.message_handler(func=lambda message: message.text == "📞 ارتباط با مدیریت")
+    def handle_contact_admin(message):
+        chat_id = message.chat.id
         user_id = message.from_user.id
-        first_name = message.from_user.first_name
+        first_name = message.from_user.first_name or "کاربر"
         username = message.from_user.username
-
+    
+        # ساخت لینک مستقیم به کاربر حتی بدون یوزرنیم
         if username:
-            user_link = f"@{username}"
+            user_identity = f"@{username}"
         else:
-            user_link = f"[{first_name}](tg://user?id={user_id})"  # لینک مستقیم به پی‌وی
-
-        # ارسال پیام به ادمین
-        bot.send_message(ADMIN_ID,f"👤 کاربر {user_link} درخواست ارتباط داده:\n\nسلام ــ تبادل",parse_mode='Markdown')  # برای اینکه لینک کلیک‌پذیر بشه 
-
+            user_identity = f"[{first_name}](tg://user?id={user_id})"
+    
+        # ارسال پیام برای مدیریت
+        bot.send_message(chat_id, "در حال ارسال پیام به مدیریت...", reply_markup=main_menu())
+        bot.send_message(ADMIN_ID, f"👤 کاربر {user_identity} درخواست ارتباط داده:\n\nسلام ــ تبادل")
         bot.send_message(chat_id, "پیام شما به مدیریت ارسال شد. لطفاً منتظر پاسخ باشید.", reply_markup=main_menu())
+
 
 
     else:
