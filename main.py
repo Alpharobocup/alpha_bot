@@ -23,7 +23,10 @@ def handle_join_check(call):
     failed_channels = []
 
     channel_usernames = [
-        "@alpha20288",  # کانال‌های مورد نیاز برای عضویت
+        "@alpha20288",
+        "@alp_question",
+        "@Alpha_Development_Team",
+        "@moon_mim128",    # کانال‌های مورد نیاز برای عضویت
     ]
 
     for username in channel_usernames:
