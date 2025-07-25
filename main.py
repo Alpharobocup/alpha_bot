@@ -68,7 +68,7 @@ def menu_handler(message):
         coins = user_coins.get(user_id, 0)
         bot.send_message(chat_id, f"💰 تعداد سکه‌های شما: {coins}", reply_markup=main_menu())
 
-        elif text == "📞 ارتباط با مدیریت":
+    elif text == "📞 ارتباط با مدیریت":
         bot.send_message(chat_id, "در حال ارسال پیام به مدیریت...", reply_markup=main_menu())
 
         user_id = message.from_user.id
