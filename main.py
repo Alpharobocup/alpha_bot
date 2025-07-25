@@ -24,7 +24,7 @@ def send_welcome(message):
     )
 
 # خوش‌آمد با کلمه "لام"
-@bot.message_handler(func=lambda m: m.text and "لام" in m.text.lower())
+@bot.message_handler(func=lambda m: m.text and "سلام" in m.text.lower())
 def lamm(message):
     send_welcome(message)
 
