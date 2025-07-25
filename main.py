@@ -123,8 +123,7 @@ def auto_contact(call):
     uid = call.from_user.id
     first_name = call.from_user.first_name
     username = call.from_user.username or "ندارد"
-    bot.send_message(ADMIN_ID, f"📩 درخواست ارتباط:
-👤 {first_name} (@{username})\n🆔 {uid}")
+    bot.send_message(ADMIN_ID, f"📩 درخواست ارتباط:👤 {first_name} (@{username})\n🆔 {uid}")
     bot.send_message(uid, "✅ پیام شما برای مدیریت ارسال شد.")
 
 # باقی کدها (مثل قبل) بدون تغییر باقی می‌مونه...
