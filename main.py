@@ -114,8 +114,21 @@ def check_join(call):
         bot.answer_callback_query(call.id)
         bot.send_message(chat_id, text, reply_markup=main_menu())
 
+# Webhook route
+WEBHOOK_PATH = f"/bot{API_TOKEN}"
+
+@app.route(WEBHOOK_PATH, methods=['POST'])
+def webhook():
+    if request.headers.get('content-type') == 'application/json':
+        update = telebot.types.Update.de_json(request.data.decode("utf-8"))
+        bot.process_new_updates([update])
+        return '', 200
+    else:
+        abort(403)
+
+# Run the Flask app
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     bot.remove_webhook()
-    bot.set_webhook(url=f"https://alpha-bot-zkn3.onrender.com/bot{API_TOKEN}")
+    bot.set_webhook(url=f"https://alpha-bot-zkn3.onrender.com{WEBHOOK_PATH}")
     app.run(host="0.0.0.0", port=port)
