@@ -3,86 +3,116 @@ from telebot import types
 import os
 from flask import Flask, request
 
-API_TOKEN = os.getenv("BOT_TOKEN", "7918282843:AAFR3gZebQoctyMOcvI8L3cI5jZZcD0kOxo")
+API_TOKEN = os.getenv("BOT_TOKEN", "7918282843:AAFR3gZebQoctyMOcvI8L3cI5jZZc0kOxo")
 
 bot = telebot.TeleBot(API_TOKEN)
+app = Flask(__name__)
+
+ADMIN_ID = 1656900957  # آیدی ادمین
+
+# کانال‌ها (این لیست رو هر وقت خواستی اضافه یا کم کنی)
+CHANNELS = [
+    "@alpha20288",
+    "@alp_question",
+    "@Alpha_Development_Team"
+]
+
 user_states = {}
+user_coins = {}  # ذخیره تعداد سکه‌های هر کاربر، ساده‌ترین حالت در مموری (برای ذخیره دائمی باید دیتابیس بزنی)
 
-# دکمه شروع برای تست
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-    markup = types.InlineKeyboardMarkup(row_width=1)
+COINS_PER_CHANNEL = 5
 
-    channel_usernames = [
-        "@alpha20288",
-        "@alp_question",
-        "@Alpha_Development_Team",
-        "@moon_mim128",
-    ]
+# منو اصلی
+def main_menu():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    btn_info = types.KeyboardButton("ℹ️ اطلاعات")
+    btn_channels = types.KeyboardButton("📢 لیست کانال‌ها")
+    btn_coins = types.KeyboardButton("💰 سکه‌های من")
+    btn_contact = types.KeyboardButton("📞 ارتباط با مدیریت")
+    markup.add(btn_info, btn_channels, btn_coins, btn_contact)
+    return markup
 
-    # دکمه لینک هر کانال
-    for username in channel_usernames:
-        link = f"https://t.me/{username.lstrip('@')}"
-        markup.add(types.InlineKeyboardButton(f"عضویت در {username}", url=link))
-
-    # دکمه بررسی عضویت
-    markup.add(types.InlineKeyboardButton("✅ بررسی عضویت", callback_data="check_join"))
-
+# /start
+@bot.message_handler(commands=["start"])
+def start(message):
     bot.send_message(
         message.chat.id,
-        "سلام! برای استفاده از ربات، لطفاً در همه‌ی کانال‌های زیر عضو شو و بعد روی دکمه «بررسی عضویت» بزن:",
-        reply_markup=markup
+        "سلام! خوش آمدی به ربات تبادل اعضا.\nلطفاً از منوی زیر استفاده کن:",
+        reply_markup=main_menu()
     )
 
+# هندل کردن دکمه‌های منو
+@bot.message_handler(func=lambda m: True)
+def menu_handler(message):
+    text = message.text
+    chat_id = message.chat.id
+    user_id = message.from_user.id
 
-# بررسی عضویت کاربر در کانال
+    if text == "ℹ️ اطلاعات":
+        info_text = (
+            "ربات تبادل اعضا به شما کمک می‌کند با عضویت در کانال‌ها سکه جمع کنید.\n"
+            f"برای هر عضویت در کانال، {COINS_PER_CHANNEL} سکه دریافت می‌کنید.\n"
+            "بعد از جمع‌آوری سکه‌ها می‌توانید از خدمات تبادل استفاده کنید."
+        )
+        bot.send_message(chat_id, info_text, reply_markup=main_menu())
+
+    elif text == "📢 لیست کانال‌ها":
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        for i, username in enumerate(CHANNELS, start=1):
+            url = f"https://t.me/{username.lstrip('@')}"
+            markup.add(types.InlineKeyboardButton(f"کانال {i}", url=url))
+        markup.add(types.InlineKeyboardButton("✅ بررسی عضویت", callback_data="check_join"))
+        bot.send_message(chat_id, "لطفاً روی هر کانال کلیک کن و عضو شو، سپس روی «بررسی عضویت» بزن.", reply_markup=markup)
+
+    elif text == "💰 سکه‌های من":
+        coins = user_coins.get(user_id, 0)
+        bot.send_message(chat_id, f"💰 تعداد سکه‌های شما: {coins}", reply_markup=main_menu())
+
+    elif text == "📞 ارتباط با مدیریت":
+        bot.send_message(chat_id, "در حال ارسال پیام به مدیریت...", reply_markup=main_menu())
+        # ارسال پیام به ادمین با اطلاعات کاربر و متن آماده
+        bot.send_message(ADMIN_ID, f"👤 کاربر {message.from_user.username or message.from_user.first_name} درخواست ارتباط داده:\n\nسلام کمک میخوام")
+        bot.send_message(chat_id, "پیام شما به مدیریت ارسال شد. لطفاً منتظر پاسخ باشید.", reply_markup=main_menu())
+
+    else:
+        bot.send_message(chat_id, "لطفاً یکی از گزینه‌های منو را انتخاب کن.", reply_markup=main_menu())
+
+# چک کردن عضویت
 @bot.callback_query_handler(func=lambda call: call.data == "check_join")
-def handle_join_check(call):
+def check_join(call):
     user_id = call.from_user.id
+    chat_id = call.message.chat.id
     all_joined = True
     failed_channels = []
 
-    channel_usernames = [
-        "@alpha20288",
-        "@alp_question",
-        "@Alpha_Development_Team",
-        "@moon_mim128",    # کانال‌های مورد نیاز برای عضویت
-    ]
+    coins_earned = 0
 
-    for username in channel_usernames:
+    for username in CHANNELS:
         try:
             member = bot.get_chat_member(username, user_id)
-            if member.status not in ['member', 'administrator', 'creator']:
+            if member.status in ['member', 'administrator', 'creator']:
+                # به ازای هر کانال که عضو است سکه اضافه کن
+                coins_earned += COINS_PER_CHANNEL
+            else:
                 all_joined = False
                 failed_channels.append(username)
-        except Exception as e:
+        except Exception:
             all_joined = False
             failed_channels.append(username)
 
     if all_joined:
-        bot.send_message(call.message.chat.id, "✅ عالی! حالا لینک کانال یا گروهت رو بفرست تا برای تبادل بررسی بشه.")
-        user_states[call.message.chat.id] = "awaiting_channel_link"
+        # اضافه کردن سکه‌ها به حساب کاربر (اینطوری مجموع حفظ میشه)
+        current_coins = user_coins.get(user_id, 0)
+        user_coins[user_id] = current_coins + coins_earned
+
+        bot.answer_callback_query(call.id, "عضویت شما تایید شد و سکه اضافه شد!")
+        bot.send_message(chat_id, f"✅ تبریک! شما در همه کانال‌ها عضو هستید.\n💰 {coins_earned} سکه به حساب شما اضافه شد.\nمجموع سکه‌های شما: {user_coins[user_id]}", reply_markup=main_menu())
     else:
-        bot.send_message(call.message.chat.id, "❌ برای ادامه باید توی همه کانال‌ها عضو باشی. لطفاً عضو شو و دوباره تلاش کن.")
-
-# دریافت لینک کاربر
-@bot.message_handler(func=lambda message: user_states.get(message.chat.id) == "awaiting_channel_link")
-def receive_channel_link(message):
-    channel_link = message.text
-    bot.send_message(message.chat.id, f"✅ لینک '{channel_link}' دریافت شد و در حال بررسی است.")
-    user_states[message.chat.id] = None
-
-# تنظیمات وب‌هوک برای اجرای روی Render یا سرور
-app = Flask(__name__)
-
-@app.route('/')
-def index():
-    return "ربات در حال اجراست!"
-
-@app.route('/' + API_TOKEN, methods=['POST'])
-def webhook():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return '', 200
+        text = "❌ شما در این کانال‌ها عضو نیستید:\n"
+        text += "\n".join([f"- {c}" for c in failed_channels])
+        text += "\n\nلطفاً عضو شو و دوباره تلاش کن."
+        bot.answer_callback_query(call.id)
+        bot.send_message(chat_id, text, reply_markup=main_menu())
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
