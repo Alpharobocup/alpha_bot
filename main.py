@@ -13,10 +13,10 @@ ADMIN_ID = 1656900957  # آیدی ادمین
 # کانال‌های پیش‌فرض
 default_channels = [
     {"title": "AlphaTeam", "username": "alp_question"},
-    {"title": "قصه امواج", "username": "@lostwavesea"},
-    {"title": "فلوریکا", "username": "@cjjrfjrxh"},
-    {"title": "time to read ( g ) ", "username": "@timestoread"},
-    {"title": "time to read ( c ) ", "username": "@wjdxeid"},
+    {"title": "قصه امواج", "username": "lostwavesea"},
+    {"title": "فلوریکا", "username": "cjjrfjrxh"},
+    {"title": "time to read ( g ) ", "username": "timestoread"},
+    {"title": "time to read ( c ) ", "username": "wjdxeid"},
     
 ]
 
