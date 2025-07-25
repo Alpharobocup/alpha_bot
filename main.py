@@ -5,9 +5,9 @@ import requests
 import os
 from flask import Flask, request
 
-API_TOKEN = 'bot7918282843:AAFR3gZebQoctyMOcvI8L3cI5jZZcD0kOxo'
+API_TOKEN = '7918282843:AAFR3gZebQoctyMOcvI8L3cI5jZZcD0kOxo'
 OWNER_ID = 1656900957  # آی‌دی عددی تو
-WEBHOOK_URL = 'https://alpha-bot-zkn3.onrender.com/' + API_TOKEN
+WEBHOOK_URL = 'https://alpha-bot-zkn3.onrender.com/bot' + API_TOKEN
 
 bot = telebot.TeleBot(API_TOKEN)
 app = Flask(__name__)
