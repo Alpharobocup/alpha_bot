@@ -100,7 +100,7 @@ def menu_handler(message):
     elif text == "📞 ارتباط با مدیریت":
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton("ارسال پیام خودکار", callback_data="auto_contact"))
-        markup.add(types.InlineKeyboardButton("ارسال پیام شخصی", url=f"https://t.me/user?id={ADMIN_ID}"))
+        markup.add(types.InlineKeyboardButton("ارسال پیام شخصی", url=f"https://t.me/alpha_tteam")) #user?id={ADMIN_ID} 
         bot.send_message(chat_id, "یکی از گزینه‌های ارتباط را انتخاب کنید:", reply_markup=markup)
 
     elif text == "✅ بررسی عضویت":
