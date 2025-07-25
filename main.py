@@ -11,9 +11,29 @@ user_states = {}
 # دکمه شروع برای تست
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("بررسی عضویت", callback_data="check_join"))
-    bot.send_message(message.chat.id, "سلام! برای ادامه لطفاً عضویتت در کانال رو بررسی کن:", reply_markup=markup)
+    markup = types.InlineKeyboardMarkup(row_width=1)
+
+    channel_usernames = [
+        "@alpha20288",
+        "@alp_question",
+        "@Alpha_Development_Team",
+        "@moon_mim128",
+    ]
+
+    # دکمه لینک هر کانال
+    for username in channel_usernames:
+        link = f"https://t.me/{username.lstrip('@')}"
+        markup.add(types.InlineKeyboardButton(f"عضویت در {username}", url=link))
+
+    # دکمه بررسی عضویت
+    markup.add(types.InlineKeyboardButton("✅ بررسی عضویت", callback_data="check_join"))
+
+    bot.send_message(
+        message.chat.id,
+        "سلام! برای استفاده از ربات، لطفاً در همه‌ی کانال‌های زیر عضو شو و بعد روی دکمه «بررسی عضویت» بزن:",
+        reply_markup=markup
+    )
+
 
 # بررسی عضویت کاربر در کانال
 @bot.callback_query_handler(func=lambda call: call.data == "check_join")
