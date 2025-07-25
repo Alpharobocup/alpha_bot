@@ -69,22 +69,23 @@ def menu_handler(message):
         bot.send_message(chat_id, f"💰 تعداد سکه‌های شما: {coins}", reply_markup=main_menu())
 
     @bot.message_handler(func=lambda message: message.text == "📞 ارتباط با مدیریت")
-        def handle_contact_admin(message):
-            chat_id = message.chat.id
-            user_id = message.from_user.id
-            first_name = message.from_user.first_name or "کاربر"
-            username = message.from_user.username
-        
-            # ساخت لینک مستقیم به کاربر حتی بدون یوزرنیم
-            if username:
-                user_identity = f"@{username}"
-            else:
-                user_identity = f"[{first_name}](tg://user?id={user_id})"
-        
-            # ارسال پیام برای مدیریت
-            bot.send_message(chat_id, "در حال ارسال پیام به مدیریت...", reply_markup=main_menu())
-            bot.send_message(ADMIN_ID, f"👤 کاربر {user_identity} درخواست ارتباط داده:\n\nسلام ــ تبادل")
-            bot.send_message(chat_id, "پیام شما به مدیریت ارسال شد. لطفاً منتظر پاسخ باشید.", reply_markup=main_menu())
+    def handle_contact_admin(message):
+        chat_id = message.chat.id
+        user_id = message.from_user.id
+        first_name = message.from_user.first_name or "بدون‌نام"
+        username = message.from_user.username
+    
+        # ساخت لینک کاربر حتی اگر یوزرنیم نداشته باشد
+        if username:
+            username_part = f"@{username}"
+        else:
+            username_part = f"[{first_name}](tg://user?id={user_id})"
+    
+        # پیام برای مدیر
+        bot.send_message(chat_id, "در حال ارسال پیام به مدیریت...", reply_markup=main_menu(), parse_mode="Markdown")
+        bot.send_message(ADMIN_ID, f"👤 کاربر {username_part} درخواست ارتباط داده:\n\nسلام ــ تبادل", parse_mode="Markdown")
+        bot.send_message(chat_id, "پیام شما به مدیریت ارسال شد. لطفاً منتظر پاسخ باشید.", reply_markup=main_menu())
+
 
 
 
