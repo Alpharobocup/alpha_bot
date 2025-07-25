@@ -139,6 +139,72 @@ def webhook():
         return '', 200
     else:
         return "Forbidden", 403
+# بررسی عضویت
+@bot.callback_query_handler(func=lambda call: call.data == "check_join")
+def check_join(call):
+    user_id = call.from_user.id
+    status_ok = True
+    for ch in default_channels:
+        try:
+            member = bot.get_chat_member(f"@{ch['username']}", user_id)
+            if member.status not in ["member", "creator", "administrator"]:
+                status_ok = False
+                break
+        except Exception:
+            status_ok = False
+            break
+
+    for uid, info in links.items():
+        try:
+            member = bot.get_chat_member(info["link"], user_id)
+            if member.status not in ["member", "creator", "administrator"]:
+                status_ok = False
+                break
+        except Exception:
+            status_ok = False
+            break
+
+    if status_ok:
+        user_coins[user_id] += COINS_PER_CHANNEL
+        bot.answer_callback_query(call.id, "✅ عضویت تایید شد! سکه اضافه شد.")
+        bot.send_message(user_id, f"🎉 عضویت شما تایید شد.\n💰 سکه‌های جدید شما: {user_coins[user_id]}")
+    else:
+        bot.answer_callback_query(call.id, "❌ عضویت کامل نیست.")
+        bot.send_message(user_id, "لطفاً در همه کانال‌ها عضو شوید و دوباره امتحان کنید.")
+
+# ثبت لینک جدید
+@bot.callback_query_handler(func=lambda call: call.data == "add_link")
+def add_link(call):
+    bot.send_message(call.message.chat.id, "لینک کانال خود را بفرستید (با @ شروع شود):")
+    bot.register_next_step_handler(call.message, receive_link)
+
+def receive_link(message):
+    if not message.text.startswith("@"):
+        bot.send_message(message.chat.id, "❌ لینک نامعتبر است. لطفاً با @ شروع شود.")
+        return
+    user_id = message.from_user.id
+    username = message.from_user.username or "ندارد"
+    first_name = message.from_user.first_name
+    links[user_id] = {
+        "username": username,
+        "first_name": first_name,
+        "link": message.text
+    }
+    bot.send_message(message.chat.id, "✅ لینک با موفقیت ثبت شد و به لیست کانال‌ها اضافه شد.")
+
+# نمایش درخواست‌ها
+@bot.callback_query_handler(func=lambda call: call.data == "show_requests")
+def show_requests(call):
+    if not links:
+        bot.send_message(call.message.chat.id, "هیچ لینکی ثبت نشده است.")
+        return
+    for uid, info in links.items():
+        link_url = f"https://t.me/{info['link'].lstrip('@')}"
+        bot.send_message(
+            call.message.chat.id,
+            f"👤 {info['first_name']} (@{info['username']})\n🆔 {uid}\n🔗 لینک: {link_url}"
+        )
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
