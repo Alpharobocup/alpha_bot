@@ -6,8 +6,9 @@ import os
 from flask import Flask, request
 
 API_TOKEN = '7918282843:AAFR3gZebQoctyMOcvI8L3cI5jZZcD0kOxo'
+WEBHOOK_PATH = '/bot' + API_TOKEN
+WEBHOOK_URL = 'https://alpha-bot-zkn3.onrender.com' + WEBHOOK_PATH
 OWNER_ID = 1656900957  # آی‌دی عددی تو
-WEBHOOK_URL = 'https://alpha-bot-zkn3.onrender.com/bot' + API_TOKEN
 
 bot = telebot.TeleBot(API_TOKEN)
 app = Flask(__name__)
@@ -111,10 +112,11 @@ def scheduled_loop():
 threading.Thread(target=scheduled_loop, daemon=True).start()
 
 # ====== اجرای Webhook روی Render ======
-@app.route('/' + API_TOKEN, methods=['POST'])
-def getMessage():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return "OK", 200
+@app.route(WEBHOOK_PATH, methods=['POST'])
+def webhook():
+    update = telebot.types.Update.de_json(request.stream.read().decode("utf-8"))
+    bot.process_new_updates([update])
+    return 'OK', 200
 
 @app.route('/')
 def webhook():
