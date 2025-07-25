@@ -2,6 +2,7 @@ import telebot
 from telebot import types
 import datetime
 import requests
+import time
 import os
 from flask import Flask, request
 
@@ -119,7 +120,7 @@ def webhook():
     return 'OK', 200
 
 @app.route('/')
-def webhook():
+def index():
     return "ربات آلفا فعال است."
 
 if __name__ == '__main__':
