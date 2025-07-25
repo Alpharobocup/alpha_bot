@@ -77,7 +77,7 @@ def menu_handler(message):
         uername = message.from_user.username
         }
         # ارسال پیام به ادمین با اطلاعات کاربر و متن آماده
-        bot.send_message(ADMIN_ID, f"👤 کاربر @{uername} (( { message.from_user.id } || { message.from_user.first_name } ))  درخواست ارتباط داده:\n\nسلام کمک میخوام")
+        bot.send_message(ADMIN_ID, f"👤 کاربر  (( { message.from_user.id } || { message.from_user.first_name } ))  درخواست ارتباط داده:\n\nسلام ــ تبادل \n @{uername}")
         bot.send_message(chat_id, "پیام شما به مدیریت ارسال شد. لطفاً منتظر پاسخ باشید.", reply_markup=main_menu())
 
     else:
