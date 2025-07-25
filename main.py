@@ -31,8 +31,9 @@ def main_menu():
     btn_channels = types.KeyboardButton("📢 لیست کانال‌ها")
     btn_coins = types.KeyboardButton("💰 سکه‌های من")
     btn_contact = types.KeyboardButton("📞 ارتباط با مدیریت")
+    
+    btn_admin = types.KeyboardButton("🧑‍💻 پنل مدیریت")
     if ADMIN_ID:
-        btn_admin = types.KeyboardButton("🧑‍💻 پنل مدیریت")
         markup.add(btn_info, btn_channels, btn_coins, btn_contact, btn_admin)
     else:
         markup.add(btn_info, btn_channels, btn_coins, btn_contact)
@@ -94,7 +95,7 @@ def menu_handler(message):
         if username:
             user_link = f"@{username}"
         else:
-            user_link = f"[{first_name}](tg://user?id={user_id})"  # لینک مستقیم به پی‌وی
+            user_link = f"(tg://user?id={user_id})"  # لینک مستقیم به پی‌وی
 
         # ذخیره درخواست کاربر
         user_data[user_id] = {
