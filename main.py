@@ -70,8 +70,8 @@ def menu_handler(message):
 
     elif text == "📞 ارتباط با مدیریت":
         bot.send_message(chat_id, "در حال ارسال پیام به مدیریت...", reply_markup=main_menu())
-        uername = None 
-        if(message.from_user.username == "None" ){
+        uername = message.from_user.username 
+        if(uername == None ){
         uername == "" 
         }
         else{
