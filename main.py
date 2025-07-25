@@ -59,6 +59,21 @@ def webhook():
 def index():
     return "Bot is running!", 200
 
+user_id = message.from_user.id
+channel_id = "https://t.me/+ggiDnZx6QzlkZWE8"  # یا لینک خصوصی بعد از join شدن ربات
+
+try:
+    member = bot.get_chat_member(channel_id, user_id)
+    if member.status in ['member', 'creator', 'administrator']:
+        bot.send_message(message.chat.id, "❌ لطفاً یک لینک معتبر کانال یا گروه ارسال کنهسسسسسس.")
+    else:
+        bot.send_message(message.chat.id, "❌   نیسسسلطفاً یک لینک معتبر کانال یا گروه ارسال کن.")
+except Exception as e:
+    bot.send_message(message.chat.id, "❌ لطفاً یک لینک خطاااااا کانال یا گروه ارسال کن.")
+
+
+
+
 if __name__ == "__main__":
     bot.remove_webhook()
     bot.set_webhook(url=f"https://alpha-bot-zkn3.onrender.com/{TOKEN}")
