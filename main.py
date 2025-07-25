@@ -36,7 +36,7 @@ def main_menu():
 @bot.message_handler(commands=["start"])
 def start(message):
     if message.chat.type != "private":
-    return
+        return
     bot.send_message(
         message.chat.id,
         "سلام! خوش آمدی به ربات تبادل اعضا.\nلطفاً از منوی زیر استفاده کن:",
@@ -47,7 +47,7 @@ def start(message):
 @bot.message_handler(func=lambda m: True)
 def menu_handler(message):
     if message.chat.type != "private":
-    return
+        return
     text = message.text
     chat_id = message.chat.id
     user_id = message.from_user.id
