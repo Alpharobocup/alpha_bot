@@ -8,7 +8,7 @@ ADMIN_ID = 1656900957  # آی‌دی عددی شما
 
 # لینک کانال‌هایی که عضویت در اونها الزامیه
 REQUIRED_CHANNELS = [
-    "https://t.me/+ggiDnZx6QzlkZWE8",
+    "https://t.me/sazemansanjeshe",
     "https://t.me/+aiGGH9GqC8syYjc8",
     "https://t.me/+5G5Kzm5XSs5jOGU0",
     "https://t.me/+rQyIwVnumeJmOWJk",
