@@ -1,130 +1,65 @@
 import telebot
 from telebot import types
-import datetime
-import requests
-import time
 import os
 from flask import Flask, request
 
-API_TOKEN = '7918282843:AAFR3gZebQoctyMOcvI8L3cI5jZZcD0kOxo'
-WEBHOOK_PATH = '/bot' + API_TOKEN
-WEBHOOK_URL = 'https://alpha-bot-zkn3.onrender.com' + WEBHOOK_PATH
-OWNER_ID = 1656900957  # آی‌دی عددی تو
+TOKEN = '7918282843:AAFR3gZebQoctyMOcvI8L3cI5jZZcD0kOxo'
+ADMIN_ID = 1656900957  # آی‌دی عددی شما
 
-bot = telebot.TeleBot(API_TOKEN)
-app = Flask(__name__)
+# لینک کانال‌هایی که عضویت در اونها الزامیه
+REQUIRED_CHANNELS = [
+    "https://t.me/+ggiDnZx6QzlkZWE8",
+    "https://t.me/+aiGGH9GqC8syYjc8",
+    "https://t.me/+5G5Kzm5XSs5jOGU0",
+    "https://t.me/+rQyIwVnumeJmOWJk",
+    "https://t.me/+6KDXytY8iz04MTc0"
+]
 
-usernames_file = "usernames.txt"
-messages_to_send = []
+bot = telebot.TeleBot(TOKEN)
+server = Flask(__name__)
 
-# خوش‌آمدگویی در پی‌وی
+user_states = {}
+
+# /start command
 @bot.message_handler(commands=['start'])
-def send_welcome(message):
-    bot.send_photo(message.chat.id,
-        photo='https://raw.githubusercontent.com/Alpharobocup/alpha_bot/main/photo16500660682.jpg',
-        caption="🌀 به ربات آلفا خوش آمدید!\n\n📘 راهنما:\n• تایپ «تقویم» برای مشاهده تاریخ\n• تایپ «+ [ساعت] پیام» برای ارسال زمان‌بندی شده\n• تایپ «لام» برای خوش‌آمد و لوگو"
-    )
+def start(message):
+    markup = types.InlineKeyboardMarkup()
+    for i, link in enumerate(REQUIRED_CHANNELS, 1):
+        markup.add(types.InlineKeyboardButton(f"کانال {i}", url=link))
+    markup.add(types.InlineKeyboardButton("✅ عضویت انجام شد", callback_data="check_join"))
+    bot.send_message(message.chat.id, "سلام! برای استفاده از ربات تبادل اعضا، ابتدا عضو ۵ کانال زیر شو و سپس روی دکمه عضویت انجام شد کلیک کن:", reply_markup=markup)
 
-# خوش‌آمد با کلمه "لام"
-@bot.message_handler(func=lambda m: m.text and "سلام" in m.text.lower())
-def lamm(message):
-    send_welcome(message)
+# بررسی عضویت (فقط تأیید کاربر - امکان چک عضویت مستقیم نداریم)
+@bot.callback_query_handler(func=lambda call: call.data == "check_join")
+def handle_join_check(call):
+    bot.send_message(call.message.chat.id, "✅ عالی! حالا لینک کانال یا گروهت رو بفرست تا برای تبادل بررسی بشه.")
+    user_states[call.message.chat.id] = "awaiting_channel_link"
 
-# حذف پیام و پیام "حذف"
-@bot.message_handler(func=lambda m: m.reply_to_message and "حذف" in m.text.lower())
-def delete_message(message):
-    try:
-        bot.delete_message(message.chat.id, message.message_id)  # حذف پیام "حذف"
-        bot.delete_message(message.chat.id, message.reply_to_message.message_id)  # حذف پیام اصلی
-    except:
-        pass
+# دریافت لینک کانال از کاربر
+@bot.message_handler(func=lambda message: user_states.get(message.chat.id) == "awaiting_channel_link")
+def receive_channel_link(message):
+    link = message.text
+    if "t.me/" in link:
+        bot.send_message(message.chat.id, "🔗 لینک دریافت شد! در حال ارسال به مدیریت جهت بررسی و درج در تبادل...")
+        bot.send_message(ADMIN_ID, f"📥 کاربر @{message.from_user.username or message.from_user.first_name} لینک تبادل ارسال کرد:\n\n{link}")
+        bot.send_message(message.chat.id, "✅ لینک شما با موفقیت ارسال شد. منتظر تایید ادمین باشید.")
+    else:
+        bot.send_message(message.chat.id, "❌ لطفاً یک لینک معتبر کانال یا گروه ارسال کن.")
+    user_states.pop(message.chat.id, None)
 
-# تقویم فارسی و میلادی
-@bot.message_handler(func=lambda m: "تقویم" in m.text.lower())
-def calendar_info(message):
-    today = datetime.datetime.now()
-    try:
-        from persiantools.jdatetime import JalaliDate
-        shamsi = JalaliDate.today()
-        bot.reply_to(message, f"📅 تاریخ امروز:\nمیلادی: {today.strftime('%Y-%m-%d')}\nشمسی: {shamsi}")
-    except:
-        bot.reply_to(message, f"📅 تاریخ امروز:\nمیلادی: {today.strftime('%Y-%m-%d')}")
-
-# ذخیره یوزرنیم‌ها
-@bot.message_handler(func=lambda m: True, content_types=['text'])
-def all_messages(message):
-    try:
-        if message.chat.type != 'private':
-            username = message.from_user.username or f"[NoUsername-{message.from_user.id}]"
-            with open(usernames_file, "a") as f:
-                f.write(username + '\n')
-    except:
-        pass
-
-    # ارسال اطلاعات کاربران به ادمین خاص
-    try:
-        sender = message.from_user
-        info = f"👤 پیام جدید از {sender.first_name} (@{sender.username} | {sender.id})"
-        bot.send_message(OWNER_ID, info)
-    except:
-        pass
-
-    # زمان‌بندی پیام
-    if message.text.startswith('+'):
-        try:
-            time_part, msg_part = message.text[1:].split(' ', 1)
-            messages_to_send.append((time_part.strip(), msg_part, message.chat.id))
-            bot.reply_to(message, f"✅ پیام زمان‌بندی شد برای {time_part.strip()}")
-        except:
-            bot.reply_to(message, "❌ فرمت درست نیست. مثلا: +06:00 صبح بخیر")
-
-# پنل ادمین
-@bot.message_handler(commands=['panel'])
-def admin_panel(message):
-    if message.from_user.id == OWNER_ID:
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("ارسال صبح بخیر", callback_data='goodmorning'))
-        markup.add(types.InlineKeyboardButton("ارسال شب بخیر", callback_data='goodnight'))
-        bot.send_message(message.chat.id, "🎛 پنل مدیریت", reply_markup=markup)
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback_inline(call):
-    if call.from_user.id != OWNER_ID:
-        return
-    if call.data == 'goodmorning':
-        bot.send_message(call.message.chat.id, "☀️ صبح بخیر رفقا!")
-    elif call.data == 'goodnight':
-        bot.send_message(call.message.chat.id, "🌙 شب خوش دوستان!")
-
-# تایمر چک پیام‌های زمان‌بندی شده
-import threading
-def scheduled_loop():
-    while True:
-        now = datetime.datetime.now().strftime("%H:%M")
-        for sched in messages_to_send[:]:
-            if sched[0] == now:
-                try:
-                    bot.send_message(sched[2], sched[1])
-                    messages_to_send.remove(sched)
-                except:
-                    pass
-        time.sleep(30)
-
-threading.Thread(target=scheduled_loop, daemon=True).start()
-
-# ====== اجرای Webhook روی Render ======
-@app.route(WEBHOOK_PATH, methods=['POST'])
+# پشتیبانی از وب‌هوک برای اجرا روی Render
+@server.route(f"/{TOKEN}", methods=['POST'])
 def webhook():
-    update = telebot.types.Update.de_json(request.stream.read().decode("utf-8"))
+    json_string = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(json_string)
     bot.process_new_updates([update])
-    return 'OK', 200
+    return "OK", 200
 
-@app.route('/')
+@server.route("/", methods=["GET"])
 def index():
-    return "ربات آلفا فعال است."
+    return "Bot is running!", 200
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+if __name__ == "__main__":
     bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK_URL)
-    app.run(host="0.0.0.0", port=port)
+    bot.set_webhook(url=f"https://alpha-bot-zkn3.onrender.com/{TOKEN}")
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
