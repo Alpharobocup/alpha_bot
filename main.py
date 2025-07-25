@@ -67,24 +67,24 @@ def menu_handler(message):
     elif text == "💰 سکه‌های من":
         coins = user_coins.get(user_id, 0)
         bot.send_message(chat_id, f"💰 تعداد سکه‌های شما: {coins}", reply_markup=main_menu())
-
-    @bot.message_handler(func=lambda message: message.text == "📞 ارتباط با مدیریت")
-    def handle_contact_admin(message):
-        chat_id = message.chat.id
-        user_id = message.from_user.id
-        first_name = message.from_user.first_name or "بدون‌نام"
-        username = message.from_user.username
-    
-        # ساخت لینک کاربر حتی اگر یوزرنیم نداشته باشد
-        if username:
-            username_part = f"@{username}"
-        else:
-            username_part = f"[{first_name}](tg://user?id={user_id})"
-    
-        # پیام برای مدیر
-        bot.send_message(chat_id, "در حال ارسال پیام به مدیریت...", reply_markup=main_menu(), parse_mode="Markdown")
-        bot.send_message(ADMIN_ID, f"👤 کاربر {username_part} درخواست ارتباط داده:\n\nسلام ــ تبادل", parse_mode="Markdown")
-        bot.send_message(chat_id, "پیام شما به مدیریت ارسال شد. لطفاً منتظر پاسخ باشید.", reply_markup=main_menu())
+    elif text == "📞 ارتباط با مدیریت":
+        @bot.message_handler(func=lambda message: message.text == "📞 ارتباط با مدیریت")
+        def handle_contact_admin(message):
+            chat_id = message.chat.id
+            user_id = message.from_user.id
+            first_name = message.from_user.first_name or "بدون‌نام"
+            username = message.from_user.username
+        
+            # ساخت لینک کاربر حتی اگر یوزرنیم نداشته باشد
+            if username:
+                username_part = f"@{username}"
+            else:
+                username_part = f"[{first_name}](tg://user?id={user_id})"
+        
+            # پیام برای مدیر
+            bot.send_message(chat_id, "در حال ارسال پیام به مدیریت...", reply_markup=main_menu(), parse_mode="Markdown")
+            bot.send_message(ADMIN_ID, f"👤 کاربر {username_part} درخواست ارتباط داده:\n\nسلام ــ تبادل", parse_mode="Markdown")
+            bot.send_message(chat_id, "پیام شما به مدیریت ارسال شد. لطفاً منتظر پاسخ باشید.", reply_markup=main_menu())
 
 
 
