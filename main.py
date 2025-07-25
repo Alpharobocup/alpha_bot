@@ -68,13 +68,27 @@ def menu_handler(message):
         coins = user_coins.get(user_id, 0)
         bot.send_message(chat_id, f"💰 تعداد سکه‌های شما: {coins}", reply_markup=main_menu())
 
-    elif text == "📞 ارتباط با مدیریت":
+        elif text == "📞 ارتباط با مدیریت":
         bot.send_message(chat_id, "در حال ارسال پیام به مدیریت...", reply_markup=main_menu())
-        uername = message.from_user.username 
-        
-        # ارسال پیام به ادمین با اطلاعات کاربر و متن آماده
-        bot.send_message(ADMIN_ID, f"👤 کاربر  (( { message.from_user.id } || { message.from_user.first_name } ))  درخواست ارتباط داده:\n\nسلام ــ تبادل \n @{uername}")
+
+        user_id = message.from_user.id
+        first_name = message.from_user.first_name
+        username = message.from_user.username
+
+        if username:
+            user_link = f"@{username}"
+        else:
+            user_link = f"[{first_name}](tg://user?id={user_id})"  # لینک مستقیم به پی‌وی
+
+        # ارسال پیام به ادمین
+        bot.send_message(
+            ADMIN_ID,
+            f"👤 کاربر {user_link} درخواست ارتباط داده:\n\nسلام ــ تبادل",
+            parse_mode='Markdown'  # برای اینکه لینک کلیک‌پذیر بشه
+        )
+
         bot.send_message(chat_id, "پیام شما به مدیریت ارسال شد. لطفاً منتظر پاسخ باشید.", reply_markup=main_menu())
+
 
     else:
         bot.send_message(chat_id, "لطفاً یکی از گزینه‌های منو را انتخاب کن.", reply_markup=main_menu())
