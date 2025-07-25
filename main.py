@@ -190,7 +190,7 @@ def add_link_save(message):
     new_link = message.text.strip()
     # ذخیره به عنوان یک لینک جدید با user_id = -1 (برای کانال عمومی)
     links[-1] = {
-        "username": "مدیریت",
+        "username": "",
         "first_name": "کانال جدید",
         "link": new_link
     }
