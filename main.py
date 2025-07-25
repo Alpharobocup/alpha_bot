@@ -70,8 +70,14 @@ def menu_handler(message):
 
     elif text == "📞 ارتباط با مدیریت":
         bot.send_message(chat_id, "در حال ارسال پیام به مدیریت...", reply_markup=main_menu())
+        if(message.from_user.username == None ){
+        uername = "" 
+        }
+        else{
+        uername = message.from_user.username
+        }
         # ارسال پیام به ادمین با اطلاعات کاربر و متن آماده
-        bot.send_message(ADMIN_ID, f"👤 کاربر @{message.from_user.username} (( { message.from_user.id } || { message.from_user.first_name } ))  درخواست ارتباط داده:\n\nسلام کمک میخوام")
+        bot.send_message(ADMIN_ID, f"👤 کاربر @{uername} (( { message.from_user.id } || { message.from_user.first_name } ))  درخواست ارتباط داده:\n\nسلام کمک میخوام")
         bot.send_message(chat_id, "پیام شما به مدیریت ارسال شد. لطفاً منتظر پاسخ باشید.", reply_markup=main_menu())
 
     else:
