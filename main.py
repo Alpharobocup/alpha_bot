@@ -32,7 +32,9 @@ data = load_data()
 default_channels = [
     {"title": "AlphaTeam", "username": "alp_question"},
     {"title": "Lost Waves", "username": "lostwavesea"},
-    {"title": "Time to Read", "username": "timestoread"},
+    {"title": "Time to Read (C)", "username": "timestoread"},
+    {"title": "Time to Read (G) ", "username": "timestoreads"},
+    {"title": "Alpha(support)", "username": "Alpha_Development_Team"},
 ]
 
 def edit_or_send(chat_id, text, markup=None, message_id=None):
@@ -163,7 +165,7 @@ def admin_panel(message):
 def auto_contact(call):
     uid, name = call.from_user.id, call.from_user.first_name
     username = call.from_user.username or "ندارد"
-    bot.send_message(ADMIN_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
+    bot.send_message(OWNER_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
     bot.send_message(uid, "✅ پیام شما برای مدیریت ارسال شد.")
    
 @bot.callback_query_handler(func=lambda call: call.data == "list_karbar")
