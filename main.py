@@ -96,12 +96,6 @@ def admins_conect(message):
     bot.send_message(message.chat.id, "یکی از گزینه‌های ارتباط را انتخاب کنید:", reply_markup=markup)
 
     
-@bot.callback_query_handler(func=lambda call: call.data == "auto_contact")
-def auto_contact(call):
-    uid, name = call.from_user.id, call.from_user.first_name
-    username = call.from_user.username or "ندارد"
-    bot.send_message(ADMIN_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
-    bot.send_message(uid, "✅ پیام شما برای مدیریت ارسال شد.")
 
 @bot.message_handler(func=lambda m: m.text == "📢 لیست کانال‌ها")
 def list_channels(message):
@@ -164,7 +158,14 @@ def admin_panel(message):
     markup.add(types.InlineKeyboardButton("📢 پیام به همه", callback_data="broadcast"))
     markup.add(types.InlineKeyboardButton("👥 لیست کاربران", callback_data="list_karbar"))
     bot.send_message(message.chat.id, "🔧 پنل مدیریت:", reply_markup=markup)
-    
+
+@bot.callback_query_handler(func=lambda call: call.data == "auto_contact")
+def auto_contact(call):
+    uid, name = call.from_user.id, call.from_user.first_name
+    username = call.from_user.username or "ندارد"
+    bot.send_message(ADMIN_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
+    bot.send_message(uid, "✅ پیام شما برای مدیریت ارسال شد.")
+   
 @bot.callback_query_handler(func=lambda call: call.data == "list_karbar")
 def user_list(call):
     if call.from_user.id != OWNER_ID:
