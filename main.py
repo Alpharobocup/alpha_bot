@@ -81,6 +81,9 @@ def show_coins(message):
 @bot.callback_query_handler(func=lambda call: call.data == "check_join")
 def check_join(call):
     uid = str(call.from_user.id)
+    if is_member(call.from_user.id):
+        users[uid] = {"username": call.from_user.username}
+        save_data(users)
     ok = True
     for ch in default_channels:
         try:
@@ -116,7 +119,15 @@ def admin_panel(message):
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("📥 ثبت لینک جدید", callback_data="add_link"))
     markup.add(types.InlineKeyboardButton("📢 پیام به همه", callback_data="broadcast"))
+    markup.add(types.InlineKeyboardButton("👥 لیست کاربران", callback_data="list_karbar"))
     bot.send_message(message.chat.id, "🔧 پنل مدیریت:", reply_markup=markup)
+    
+@bot.callback_query_handler(func=lambda call: call.data == "list_karbar" and m.from_user.id == OWNER_ID)
+def user_list(message):
+    text = "👤 لیست کاربران ثبت شده:\n"
+    for uid, info in users.items():
+        text += f"• @{info.get('username', 'بدون یوزرنیم')} - {uid}\n"
+    bot.send_message(message.chat.id, text or "❌ هنوز کاربری نیست.")
 
 @bot.callback_query_handler(func=lambda call: call.data == "add_link")
 def add_link(call):
