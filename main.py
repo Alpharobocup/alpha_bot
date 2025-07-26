@@ -59,8 +59,38 @@ def start(message):
 def main_menu():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("📢 لیست کانال‌ها", "💰 سکه‌های من", "✅ بررسی عضویت")
+    markup.add("📄 شرایط و قوانین","ℹ️ اطلاعات")
     markup.add("🧑‍💻 پنل مدیریت")
     return markup
+elif text == "ℹ️ اطلاعات":
+    msg = (
+        "ربات تبادل اعضا به شما کمک می‌کند با عضویت در کانال‌ها سکه جمع کنید.\n"
+        f"برای هر عضویت {COINS_PER_CHANNEL} سکه می‌گیرید.\nبعد از آن می‌تونید لینک ثبت کنید."
+    )
+    edit_or_send(chat_id, msg, main_menu(), message_id=message.message_id)
+
+ elif text == "📄 شرایط و قوانین":
+    msg = """
+    📜 شرایط استفاده:
+     
+     1. عضویت در همه کانال‌ها الزامی است.
+     2. بی‌احترامی = مسدودی دائمی
+     3. تبلیغ بدون هماهنگی ممنوع است.
+    """
+    edit_or_send(chat_id, msg.strip(), main_menu(), message_id=message.message_id)
+  elif text == "📞 ارتباط با مدیریت":
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("ارسال پیام خودکار", callback_data="auto_contact"))
+    markup.add(types.InlineKeyboardButton("ارسال پیام شخصی", url=f"https://t.me/alpha_tteam"))
+    edit_or_send(chat_id, "یکی از گزینه‌های ارتباط را انتخاب کنید:", markup, message_id=message.message_id)
+
+    
+@bot.callback_query_handler(func=lambda call: call.data == "auto_contact")
+def auto_contact(call):
+    uid, name = call.from_user.id, call.from_user.first_name
+    username = call.from_user.username or "ندارد"
+    bot.send_message(ADMIN_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
+    bot.send_message(uid, "✅ پیام شما برای مدیریت ارسال شد.")
 
 @bot.message_handler(func=lambda m: m.text == "📢 لیست کانال‌ها")
 def list_channels(message):
