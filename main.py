@@ -65,14 +65,17 @@ def main_menu():
     
 @bot.message_handler(func=lambda m: m.text == "ℹ️ اطلاعات")  
 def information_(message):
+    uid = str(message.from_user.id)
     msg = (
         "ربات تبادل اعضا به شما کمک می‌کند با عضویت در کانال‌ها سکه جمع کنید.\n"
         f"برای هر عضویت {COINS_PER_JOIN} سکه می‌گیرید.\nبعد از آن می‌تونید لینک ثبت کنید."
     )
-    edit_or_send(chat_id, msg, main_menu(), message_id=message.chat.id)
-    
+    bot.send_message(uid , msg )
+    #edit_or_send(message.chat.id, msg, main_menu(), message_id=message.message_id)
+
 @bot.message_handler(func=lambda m: m.text == "📄 شرایط و قوانین")
 def rules_(message):
+    uid = str(message.from_user.id)
     msg = """
     📜 شرایط استفاده:
      
@@ -80,7 +83,9 @@ def rules_(message):
      2. بی‌احترامی = مسدودی دائمی
      3. تبلیغ بدون هماهنگی ممنوع است.
     """
-    edit_or_send(chat_id, msg.strip(), main_menu(), message_id=message.chat.id)
+    bot.send_message(uid , msg )
+    #edit_or_send(message.chat.id, msg.strip(), main_menu(), message_id=message.message_id)
+
 
 @bot.message_handler(func=lambda m: m.text == "📞 ارتباط با مدیریت")
 def admins_conect(message):
@@ -113,35 +118,42 @@ def show_coins(message):
     coins = data["users"].get(uid, {}).get("coins", 0)
     bot.send_message(message.chat.id, f"💰 سکه‌های شما: {coins}")
 
+def is_member(channel_username, user_id):
+    try:
+        member = bot.get_chat_member(f"@{channel_username}", user_id)
+        return member.status in ["member", "administrator", "creator"]
+    except:
+        return False
+
+
 @bot.callback_query_handler(func=lambda call: call.data == "check_join")
 def check_join(call):
     uid = str(call.from_user.id)
-    username = call.from_user.username or "ندارد"
+    user = data["users"].get(uid, {})
+    if not user:
+        return bot.answer_callback_query(call.id, "❌ کاربر ناشناس.")
 
+    all_channels = default_channels + data.get("links", [])
     all_ok = True
-
-    for ch in default_channels + data["links"]:
-        try:
-            channel = ch["username"] if "username" in ch else ch["link"].lstrip("@")
-            member = bot.get_chat_member(f"@{channel}", int(uid))
-            if member.status not in ["member", "administrator", "creator"]:
-                all_ok = False
-                break
-        except:
+    for ch in all_channels:
+        username = ch["username"] if "username" in ch else ch["link"].lstrip("@")
+        if not is_member(username, int(uid)):
             all_ok = False
             break
 
     if all_ok:
-        if not data["users"][uid].get("joined", False):
-            data["users"][uid]["coins"] += COINS_PER_JOIN
-            data["users"][uid]["joined"] = True
+        if not user.get("joined", False):
+            user["joined"] = True
+            user["coins"] += COINS_PER_JOIN
+            data["users"][uid] = user
             save_data(data)
             bot.answer_callback_query(call.id, "✅ عضویت تایید شد و سکه دریافت شد.")
         else:
-            bot.answer_callback_query(call.id, "✅ قبلاً عضو شده‌ای.")
-        bot.send_message(uid, f"💰 سکه فعلی: {data['users'][uid]['coins']}")
+            bot.answer_callback_query(call.id, "✅ قبلاً عضو شده‌اید.")
+        bot.send_message(uid, f"💰 سکه فعلی: {user['coins']}")
     else:
-        bot.answer_callback_query(call.id, "❌ هنوز در همه کانال‌ها عضو نیستی.")
+        bot.answer_callback_query(call.id, "❌ هنوز در همه کانال‌ها عضو نیستید.")
+
 
 
 @bot.message_handler(func=lambda m: m.text == "🧑‍💻 پنل مدیریت" and m.from_user.id == OWNER_ID)
