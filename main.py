@@ -149,7 +149,7 @@ def do_broadcast(message):
             continue
     bot.send_message(message.chat.id, f"✅ پیام به {sent} نفر ارسال شد.")
 
-@app.route(WEBHOOK_PATH, methods=["POST"])
+@app.route(WEBHOOK_URL, methods=["POST"])
 def webhook():
     if request.headers.get("content-type") == "application/json":
         update = telebot.types.Update.de_json(request.data.decode("utf-8"))
@@ -164,5 +164,5 @@ def index():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK_URL + WEBHOOK_PATH)
+    bot.set_webhook(url=WEBHOOK_URL )
     app.run(host="0.0.0.0", port=port)
