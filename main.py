@@ -89,10 +89,11 @@ def rules_(message):
 
 @bot.message_handler(func=lambda m: m.text == "📞 ارتباط با مدیریت")
 def admins_conect(message):
+    uid = str(message.from_user.id)
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("ارسال پیام خودکار", callback_data="auto_contact"))
     markup.add(types.InlineKeyboardButton("ارسال پیام شخصی", url=f"https://t.me/alpha_tteam"))
-    edit_or_send(chat_id, "یکی از گزینه‌های ارتباط را انتخاب کنید:", markup, message_id=message.message_id)
+    bot.send_message(uid, "یکی از گزینه‌های ارتباط را انتخاب کنید:", markup)
 
     
 @bot.callback_query_handler(func=lambda call: call.data == "auto_contact")
