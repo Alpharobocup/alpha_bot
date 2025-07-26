@@ -69,7 +69,7 @@ def information_(message):
         "ربات تبادل اعضا به شما کمک می‌کند با عضویت در کانال‌ها سکه جمع کنید.\n"
         f"برای هر عضویت {COINS_PER_JOIN} سکه می‌گیرید.\nبعد از آن می‌تونید لینک ثبت کنید."
     )
-    edit_or_send(chat_id, msg, main_menu(), message_id=message.message_id)
+    edit_or_send(chat_id, msg, main_menu(), message_id=message.chat.id)
     
 @bot.message_handler(func=lambda m: m.text == "📄 شرایط و قوانین")
 def rules_(message):
@@ -80,7 +80,7 @@ def rules_(message):
      2. بی‌احترامی = مسدودی دائمی
      3. تبلیغ بدون هماهنگی ممنوع است.
     """
-    edit_or_send(chat_id, msg.strip(), main_menu(), message_id=message.message_id)
+    edit_or_send(chat_id, msg.strip(), main_menu(), message_id=message.chat.id)
 
 @bot.message_handler(func=lambda m: m.text == "📞 ارتباط با مدیریت")
 def admins_conect(message):
