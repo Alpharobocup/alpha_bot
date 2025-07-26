@@ -93,7 +93,7 @@ def admins_conect(message):
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("ارسال پیام خودکار", callback_data="auto_contact"))
     markup.add(types.InlineKeyboardButton("ارسال پیام شخصی", url=f"https://t.me/alpha_tteam"))
-    bot.send_message(uid, "یکی از گزینه‌های ارتباط را انتخاب کنید:", markup)
+    bot.send_message(message.chat.id, "یکی از گزینه‌های ارتباط را انتخاب کنید:", reply_markup=markup)
 
     
 @bot.callback_query_handler(func=lambda call: call.data == "auto_contact")
