@@ -112,9 +112,9 @@ def check_dokme(call):
         else:
             bot.answer_callback_query(call.id, "✅ قبلاً عضو شدی.")
         bot.send_message(uid, f"💰 سکه فعلی: {user['coins']}")
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
-    bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین ارسال بشه ", reply_markup=markup)
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
+        bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین ارسال بشه ", reply_markup=markup)
     else:
         bot.answer_callback_query(call.id, "❌ هنوز در همه کانال‌ها عضو نیستید.")
 
