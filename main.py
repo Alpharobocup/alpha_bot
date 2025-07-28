@@ -56,97 +56,105 @@ def start(message):
             "joined": False
         }
         save_data(data)
-    bot.send_message(uid, "سلام! به ربات تبادل اعضا خوش اومدی .", reply_markup=main_menu())
 
-def main_menu():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add("📢 لیست کانال‌ها", "💰 سکه‌های من", "✅ بررسی عضویت")
-    markup.add("","📄 شرایط و قوانین","ℹ️ اطلاعات"   , "📞 ارتباط با ادمین")
-    markup.add("🧑‍💻 پنل ادمین")
+    markup.add("🇮🇷 فارسی", "🇬🇧 English")
+    bot.send_message(message.chat.id, "لطفاً زبان را انتخاب کنید:\nPlease select your language:", reply_markup=markup)
+
+
+@bot.message_handler(func=lambda m: m.text in ["🇮🇷 فارسی", "🇬🇧 English"])
+def set_language(message):
+    uid = str(message.from_user.id)
+    lang = "fa" if message.text == "🇮🇷 فارسی" else "en"
+    data["users"][uid]["language"] = lang
+    save_data(data)
+
+    if lang == "fa":
+        bot.send_message(message.chat.id, "سلام! به ربات تبادل اعضا خوش اومدی.", reply_markup=main_menu("fa"))
+    else:
+        bot.send_message(message.chat.id, "Hi! Welcome to the member exchange bot.", reply_markup=main_menu("en"))
+
+
+def main_menu(lang="fa"):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    if lang == "fa":
+        markup.add("📢 لیست کانال‌ها", "💰 سکه‌های من", "✅ بررسی عضویت")
+        markup.add("📄 شرایط و قوانین", "ℹ️ اطلاعات", "📞 ارتباط با ادمین")
+        markup.add("🧑‍💻 پنل ادمین")
+    else:
+        markup.add("📢 Channel List", "💰 My Coins", "✅ Check Join")
+        markup.add("📄 Terms & Rules", "ℹ️ Info", "📞 Contact Admin")
+        markup.add("🧑‍💻 Admin Panel")
     return markup
-    
-@bot.message_handler(func=lambda m: m.text == "ℹ️ اطلاعات")  
+
+
+@bot.message_handler(func=lambda m: m.text in ["ℹ️ اطلاعات", "ℹ️ Info"])
 def information_(message):
     uid = str(message.from_user.id)
-    msg = (
-        "ربات تبادل اعضا به شما کمک می‌کند با عضویت در کانال‌ها سکه جمع کنید.\n"
-        f"برای هر سری عضویت {COINS_PER_JOIN} سکه می‌گیرید.\nبعد از آن می‌تونید لینک ثبت کنید."
-    )
-    bot.send_message(uid , msg )
-    #edit_or_send(message.chat.id, msg, main_menu(), message_id=message.message_id)
+    lang = data["users"].get(uid, {}).get("language", "fa")
+    if lang == "fa":
+        msg = (
+            "ربات تبادل اعضا به شما کمک می‌کند با عضویت در کانال‌ها سکه جمع کنید.\n"
+            f"برای هر سری عضویت {COINS_PER_JOIN} سکه می‌گیرید.\nبعد از آن می‌تونید لینک ثبت کنید."
+        )
+    else:
+        msg = (
+            "This bot helps you collect coins by joining channels.\n"
+            f"You get {COINS_PER_JOIN} coins per join.\nThen you can submit your channel link."
+        )
+    bot.send_message(message.chat.id, msg)
 
-@bot.message_handler(func=lambda m: m.text == "📄 شرایط و قوانین")
+
+@bot.message_handler(func=lambda m: m.text in ["📄 شرایط و قوانین", "📄 Terms & Rules"])
 def rules_(message):
     uid = str(message.from_user.id)
-    msg = """
+    lang = data["users"].get(uid, {}).get("language", "fa")
+    if lang == "fa":
+        msg = """
     📜 شرایط استفاده:
-     
      1. عضویت در همه کانال‌ها الزامی است.
      2. بی‌احترامی = مسدودی دائمی
      3. تبلیغ بدون هماهنگی ممنوع است.
-    """
-    bot.send_message(uid , msg )
-    #edit_or_send(message.chat.id, msg.strip(), main_menu(), message_id=message.message_id)
-@bot.message_handler(func=lambda m: m.text == "بررسی عضویت ✅")
-def check_dokme(message):
-    uid = str(message.from_user.id)
-    user = data["users"].get(uid, {})
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
-
-    if not user:
-        bot.send_message(message.chat.id, "❌ کاربر ناشناس.")
-        return
-
-    all_channels = default_channels + data.get("links", [])
-    all_ok = True
-    for ch in all_channels:
-        username = ch["username"] if "username" in ch else ch["link"].lstrip("@")
-        if not is_member(username, int(uid)):
-            all_ok = False
-            break
-
-    if all_ok:
-        if not user.get("joined", False):
-            user["joined"] = True
-            user["coins"] += COINS_PER_JOIN
-            data["users"][uid] = user
-            save_data(data)
-            bot.send_message(message.chat.id, "✅ عضویت تایید شد و سکه دریافت شد.")
-            bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین ارسال بشه", reply_markup=markup)
-        else:
-            bot.send_message(message.chat.id, "✅ قبلاً عضو شدی.")
-        bot.send_message(message.chat.id, f"💰 سکه فعلی: {user['coins']}")
+        """
     else:
-        bot.send_message(message.chat.id, "❌ هنوز در همه کانال‌ها عضو نشدی.")
+        msg = """
+    📜 Terms of Use:
+     1. You must join all channels.
+     2. Disrespect = Permanent ban
+     3. Advertising without permission is prohibited.
+        """
+    bot.send_message(message.chat.id, msg.strip())
 
 
-
-@bot.message_handler(func=lambda m: m.text == "📞 ارتباط با ادمین")
+@bot.message_handler(func=lambda m: m.text in ["📞 ارتباط با ادمین", "📞 Contact Admin"])
 def admins_conect(message):
     uid = str(message.from_user.id)
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("ارسال پیام خودکار", callback_data="auto_contact"))
-    markup.add(types.InlineKeyboardButton("ارسال پیام شخصی", url=f"https://t.me/alpha_tteam"))
-    bot.send_message(message.chat.id, "یکی از گزینه‌های ارتباط رو انتخاب کن:", reply_markup=markup)
+    markup.add(types.InlineKeyboardButton("ارسال پیام خودکار / Auto Send", callback_data="auto_contact"))
+    markup.add(types.InlineKeyboardButton("ارسال پیام شخصی / Personal Message", url=f"https://t.me/alpha_tteam"))
+    bot.send_message(message.chat.id, "یکی از گزینه‌های ارتباط رو انتخاب کن:\nChoose one of the contact options:", reply_markup=markup)
 
-    
 
-@bot.message_handler(func=lambda m: m.text == "📢 لیست کانال‌ها")
+@bot.message_handler(func=lambda m: m.text in ["📢 لیست کانال‌ها", "📢 Channel List"])
 def list_channels(message):
     markup = types.InlineKeyboardMarkup()
     for ch in default_channels:
         markup.add(types.InlineKeyboardButton(ch["title"], url=f"https://t.me/{ch['username']}"))
     for link in data["links"]:
         markup.add(types.InlineKeyboardButton(f"{link['first_name']} (@{link['username']})", url=f"https://t.me/{link['link'].lstrip('@')}"))
-    markup.add(types.InlineKeyboardButton("✅ بررسی عضویت", callback_data="check_join"))
-    bot.send_message(message.chat.id, "عضو شو و بعد بررسی عضویت رو بزن:", reply_markup=markup)
+    markup.add(types.InlineKeyboardButton("✅ بررسی عضویت / Check Join", callback_data="check_join"))
+    bot.send_message(message.chat.id, "عضو شو و بعد بررسی عضویت رو بزن:\nJoin all channels and then click check:", reply_markup=markup)
 
-@bot.message_handler(func=lambda m: m.text == "💰 سکه‌های من")
+
+@bot.message_handler(func=lambda m: m.text in ["💰 سکه‌های من", "💰 My Coins"])
 def show_coins(message):
     uid = str(message.from_user.id)
     coins = data["users"].get(uid, {}).get("coins", 0)
-    bot.send_message(message.chat.id, f"💰 سکه‌های شما: {coins}")
+    lang = data["users"].get(uid, {}).get("language", "fa")
+    if lang == "fa":
+        bot.send_message(message.chat.id, f"💰 سکه‌های شما: {coins}")
+    else:
+        bot.send_message(message.chat.id, f"💰 Your coins: {coins}")
 
 def is_member(channel_username, user_id):
     try:
