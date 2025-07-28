@@ -65,7 +65,7 @@ def main_menu():
     markup.add("🧑‍💻 پنل ادمین")
     return markup
     
-@bot.message_handler(func=lambda m: m.text == "ℹ️ اطلاعات")  
+@bot.message_handler(func=lambda m: m.text in [ "ℹ️ اطلاعات" , "/information"])  
 def information_(message):
     uid = str(message.from_user.id)
     msg = (
@@ -77,7 +77,7 @@ def information_(message):
     bot.send_message(uid , msg )
     #edit_or_send(message.chat.id, msg, main_menu(), message_id=message.message_id)
 
-@bot.message_handler(func=lambda m: m.text == "📄 شرایط و قوانین")
+@bot.message_handler(func=lambda m: m.text in ["📄 شرایط و قوانین" , "/rules"])
 def rules_(message):
     uid = str(message.from_user.id)
     msg = """
@@ -89,7 +89,7 @@ def rules_(message):
     """
     bot.send_message(uid , msg )
     #edit_or_send(message.chat.id, msg.strip(), main_menu(), message_id=message.message_id)
-@bot.message_handler(func=lambda m: m.text == "✅ بررسی عضویت")
+@bot.message_handler(func=lambda m: m.text in [ "✅ بررسی عضویت" ,"/Membership_check"])
 def check_dokme(message):
     uid = str(message.from_user.id)
     user = data["users"].get(uid, {})
@@ -134,7 +134,7 @@ def admins_conect(message):
 
     
 
-@bot.message_handler(func=lambda m: m.text == "📢 لیست کانال‌ها")
+@bot.message_handler(func=lambda m: m.text in [ "📢 لیست کانال‌ها" , "/channel_list"] )
 def list_channels(message):
     markup = types.InlineKeyboardMarkup()
     for ch in default_channels:
@@ -144,7 +144,7 @@ def list_channels(message):
     markup.add(types.InlineKeyboardButton("✅ بررسی عضویت", callback_data="check_join"))
     bot.send_message(message.chat.id, "عضو شو و بعد بررسی عضویت رو بزن:", reply_markup=markup)
 
-@bot.message_handler(func=lambda m: m.text == "💰 سکه‌های من")
+@bot.message_handler(func=lambda m: m.text in [ "💰 سکه‌های من" , "/My_coins"])
 def show_coins(message):
     uid = str(message.from_user.id)
     coins = data["users"].get(uid, {}).get("coins", 0)
@@ -197,7 +197,7 @@ def check_join(call):
 
 
 
-@bot.message_handler(func=lambda m: m.text == "🧑‍💻 پنل ادمین" and m.from_user.id == OWNER_ID)
+@bot.message_handler(func=lambda m: m.text in ["🧑‍💻 پنل ادمین", "/admin_panel"] and m.from_user.id == OWNER_ID )
 def admin_panel(message):
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("📥 ثبت لینک جدید", callback_data="add_link"))
