@@ -223,9 +223,29 @@ def user_list(call):
 @bot.callback_query_handler(func=lambda call: call.data == "add_link_user")
 def add_link_user(call):
     uid = call.from_user.id
-    bot.send_message(call.message.chat.id, "آیدی کانال یا گروهت رو بفرست (با @):")
-    bot.send_message(OWNER_ID, f"📩 link: { call.message } \n {name} (@{username})\n🆔 {uid}")
-    #bot.register_next_step_handler(call.message, save_link)
+    bot.send_message(call.message.chat.id, "✅ آیدی کانال یا گروهت رو بفرست (با @):")
+    
+    # منتظر پیام بعدی کاربر بمون
+    bot.register_next_step_handler(call.message, forward_link_to_admin, uid)
+
+
+def forward_link_to_admin(message, uid):
+    try:
+        username = message.from_user.username or "ندارد"
+        name = message.from_user.first_name
+
+        # فوروارد کردن پیام اصلی لینک به مدیر
+        bot.forward_message(OWNER_ID, message.chat.id, message.message_id)
+
+        # ارسال پیام جداگانه همراه با اطلاعات کاربر
+        bot.send_message(OWNER_ID, f"👤 از طرف {name} (@{username})\n🆔 {uid}")
+
+        # اطلاع دادن به کاربر
+        bot.send_message(message.chat.id, "✅ لینک شما برای مدیریت ارسال شد.")
+    except Exception as e:
+        bot.send_message(message.chat.id, "❌ مشکلی در ارسال لینک پیش آمد.")
+        print(f"خطا در فوروارد لینک: {e}")
+
 
 @bot.callback_query_handler(func=lambda call: call.data == "add_link")
 def add_link(call):
