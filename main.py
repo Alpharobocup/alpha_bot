@@ -32,6 +32,7 @@ data = load_data()
 default_channels = [
     {"title": "AlphaTeam", "username": "alp_question"},
     {"title": "Lost Waves", "username": "lostwavesea"},
+    {"title": "طنز کده", "username": "ttanz_kade"},
     #{"title": "Time to Read (C)", "username": "timestoread"},
     {"title": "Time to Read (G) ", "username": "timestoreads"},
     {"title": "Alpha(support)", "username": "Alpha_Development_Team"},
