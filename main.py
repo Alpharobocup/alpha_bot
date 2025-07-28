@@ -47,7 +47,7 @@ def edit_or_send(chat_id, text, markup=None, message_id=None):
     except:
         bot.send_message(chat_id, text, reply_markup=markup, parse_mode="HTML")
 
-@bot.message_handler(commands=["start"])
+@bot.message_handler(commands="start")
 def start(message):
     uid = str(message.from_user.id)
     if uid not in data["users"]:
