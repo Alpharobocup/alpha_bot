@@ -32,7 +32,7 @@ data = load_data()
 default_channels = [
     {"title": "AlphaTeam", "username": "alp_question"},
     {"title": "Lost Waves", "username": "lostwavesea"},
-    {"title": "Time to Read (C)", "username": "timestoread"},
+    #{"title": "Time to Read (C)", "username": "timestoread"},
     {"title": "Time to Read (G) ", "username": "timestoreads"},
     {"title": "Alpha(support)", "username": "Alpha_Development_Team"},
 ]
@@ -70,7 +70,7 @@ def information_(message):
     uid = str(message.from_user.id)
     msg = (
         "ربات تبادل اعضا به شما کمک می‌کند با عضویت در کانال‌ها سکه جمع کنید.\n"
-        f"برای هر عضویت {COINS_PER_JOIN} سکه می‌گیرید.\nبعد از آن می‌تونید لینک ثبت کنید."
+        f"برای هر سری عضویت {COINS_PER_JOIN} سکه می‌گیرید.\nبعد از آن می‌تونید لینک ثبت کنید."
     )
     bot.send_message(uid , msg )
     #edit_or_send(message.chat.id, msg, main_menu(), message_id=message.message_id)
@@ -144,7 +144,7 @@ def check_join(call):
             user["coins"] += COINS_PER_JOIN
             data["users"][uid] = user
             save_data(data)
-            bot.answer_callback_query(call.id, "✅ عضویت تایید شد و سکه دریافت شد.")
+            bot.answer_callback_query(call.id, "✅ عضویت تایید شد و سکه دریافت شد." , reply_markup=add_link_user())
         else:
             bot.answer_callback_query(call.id, "✅ قبلاً عضو شده‌اید.")
         bot.send_message(uid, f"💰 سکه فعلی: {user['coins']}")
@@ -166,7 +166,7 @@ def auto_contact(call):
     uid, name = call.from_user.id, call.from_user.first_name
     username = call.from_user.username or "ندارد"
     bot.send_message(OWNER_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
-    bot.send_message(uid, "✅ پیام شما برای مدیریت ارسال شد.")
+    bot.send_message(call.id, "✅ پیام شما برای مدیریت ارسال شد.")
    
 @bot.callback_query_handler(func=lambda call: call.data == "list_karbar")
 def user_list(call):
@@ -178,6 +178,12 @@ def user_list(call):
         text += f"• @{username} - {uid}\n"
     bot.send_message(call.message.chat.id, text or "❌ کاربری ثبت نشده.")
 
+@bot.callback_query_handler(func=lambda call: call.data == "add_link_user")
+def add_link_user(call):
+    uid = call.from_user.id
+    bot.send_message(call.message.chat.id, "لینک کانال خود را ارسال کنید (با @):")
+    bot.send_message(OWNER_ID, f"📩 link: { call.message } \n {name} (@{username})\n🆔 {uid}")
+    #bot.register_next_step_handler(call.message, save_link)
 
 @bot.callback_query_handler(func=lambda call: call.data == "add_link")
 def add_link(call):
