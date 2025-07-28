@@ -63,8 +63,8 @@ def main_menu():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("📢 لیست کانال‌ها", "💰 سکه‌های من", "✅ بررسی عضویت")
     markup.add("","📄 شرایط و قوانین","ℹ️ اطلاعات"   , "📞 ارتباط با ادمین")
-    #if call.from_user.id == OWNER_ID:
-    markup.add("🧑‍💻 پنل ادمین")
+    if call.from_user.id == OWNER_ID:
+        markup.add("🧑‍💻 پنل ادمین")
     return markup
     
 @bot.message_handler(func=lambda m: m.text in [ "ℹ️ اطلاعات" , "/information"])  
