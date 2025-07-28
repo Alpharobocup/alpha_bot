@@ -60,7 +60,7 @@ def start(message):
 
 def main_menu():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add("📢 لیست کانال‌ها", "💰 سکه‌های من", "✅ بررسی عضویت")
+    markup.add("📢 لیست کانال‌ها", "💰 سکه‌های من", "بررسی")
     markup.add("","📄 شرایط و قوانین","ℹ️ اطلاعات"   , "📞 ارتباط با ادمین")
     markup.add("🧑‍💻 پنل ادمین")
     return markup
@@ -87,12 +87,12 @@ def rules_(message):
     """
     bot.send_message(uid , msg )
     #edit_or_send(message.chat.id, msg.strip(), main_menu(), message_id=message.message_id)
-@bot.message_handler(func=lambda m: m.text == "بررسی عضویت ✅")
+@bot.message_handler(func=lambda m: m.text == "بررسی")
 def check_dokme(message):
     uid = str(message.from_user.id)
     user = data["users"].get(uid, {})
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
+    #markup = types.InlineKeyboardMarkup()
+    #markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
 
     if not user:
         bot.send_message(message.chat.id, "❌ کاربر ناشناس.")
@@ -113,7 +113,7 @@ def check_dokme(message):
             data["users"][uid] = user
             save_data(data)
             bot.send_message(message.chat.id, "✅ عضویت تایید شد و سکه دریافت شد.")
-            bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین ارسال بشه", reply_markup=markup)
+            #bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین فرستاده بشه", reply_markup=markup)
         else:
             bot.send_message(message.chat.id, "✅ قبلاً عضو شدی.")
         bot.send_message(message.chat.id, f"💰 سکه فعلی: {user['coins']}")
@@ -188,7 +188,7 @@ def check_join(call):
         
         bot.send_message(call.message.chat.id, f"💰 سکه فعلی: {user['coins']}")
         markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
-        bot.send_message(call.message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین ارسال بشه", reply_markup=markup)
+        bot.send_message(call.message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین فرستاده بشه", reply_markup=markup)
     else:
         bot.answer_callback_query(call.id, "❌ هنوز در همه کانال‌ها عضو نیستی.")
 
