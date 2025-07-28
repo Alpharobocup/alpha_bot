@@ -56,13 +56,13 @@ def start(message):
             "joined": False
         }
         save_data(data)
-    bot.send_message(uid, "سلام! خوش آمدی به ربات تبادل اعضا.", reply_markup=main_menu())
+    bot.send_message(uid, "سلام! به ربات تبادل اعضا خوش اومدی .", reply_markup=main_menu())
 
 def main_menu():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("📢 لیست کانال‌ها", "💰 سکه‌های من", "✅ بررسی عضویت")
-    markup.add("","📄 شرایط و قوانین","ℹ️ اطلاعات"   , "📞 ارتباط با مدیریت")
-    markup.add("🧑‍💻 پنل مدیریت")
+    markup.add("","📄 شرایط و قوانین","ℹ️ اطلاعات"   , "📞 ارتباط با ادمین")
+    markup.add("🧑‍💻 پنل ادمین")
     return markup
     
 @bot.message_handler(func=lambda m: m.text == "ℹ️ اطلاعات")  
@@ -87,15 +87,45 @@ def rules_(message):
     """
     bot.send_message(uid , msg )
     #edit_or_send(message.chat.id, msg.strip(), main_menu(), message_id=message.message_id)
+@bot.message_handler(func=lambda m: m.text == "✅ بررسی عضویت")
+def check_dokme(call):
+    uid = str(call.from_user.id)
+    user = data["users"].get(uid, {})
+    if not user:
+        return bot.answer_callback_query(call.id, "❌ کاربر ناشناس.")
+
+    all_channels = default_channels + data.get("links", [])
+    all_ok = True
+    for ch in all_channels:
+        username = ch["username"] if "username" in ch else ch["link"].lstrip("@")
+        if not is_member(username, int(uid)):
+            all_ok = False
+            break
+
+    if all_ok:
+        if not user.get("joined", False):
+            user["joined"] = True
+            user["coins"] += COINS_PER_JOIN
+            data["users"][uid] = user
+            save_data(data)
+            bot.answer_callback_query(call.id, "✅ عضویت تایید شد و سکه دریافت شد." )
+        else:
+            bot.answer_callback_query(call.id, "✅ قبلاً عضو شدی.")
+        bot.send_message(uid, f"💰 سکه فعلی: {user['coins']}")
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
+    bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین ارسال بشه ", reply_markup=markup)
+    else:
+        bot.answer_callback_query(call.id, "❌ هنوز در همه کانال‌ها عضو نیستید.")
 
 
-@bot.message_handler(func=lambda m: m.text == "📞 ارتباط با مدیریت")
+@bot.message_handler(func=lambda m: m.text == "📞 ارتباط با ادمین")
 def admins_conect(message):
     uid = str(message.from_user.id)
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("ارسال پیام خودکار", callback_data="auto_contact"))
     markup.add(types.InlineKeyboardButton("ارسال پیام شخصی", url=f"https://t.me/alpha_tteam"))
-    bot.send_message(message.chat.id, "یکی از گزینه‌های ارتباط را انتخاب کنید:", reply_markup=markup)
+    bot.send_message(message.chat.id, "یکی از گزینه‌های ارتباط رو انتخاب کن:", reply_markup=markup)
 
     
 
@@ -146,33 +176,35 @@ def check_join(call):
             save_data(data)
             bot.answer_callback_query(call.id, "✅ عضویت تایید شد و سکه دریافت شد." )
         else:
-            bot.answer_callback_query(call.id, "✅ قبلاً عضو شده‌اید.")
+            bot.answer_callback_query(call.id, "✅ قبلاً عضو شدی.")
         bot.send_message(uid, f"💰 سکه فعلی: {user['coins']}")
-        bot.send_message(uid , "access link :: " , reply_markup=add_link_user())
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
+    bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین ارسال بشه ", reply_markup=markup)
     else:
-        bot.answer_callback_query(call.id, "❌ هنوز در همه کانال‌ها عضو نیستید.")
+        bot.answer_callback_query(call.id, "❌ هنوز در همه کانال‌ها عضو نیستی.")
 
 
 
-@bot.message_handler(func=lambda m: m.text == "🧑‍💻 پنل مدیریت" and m.from_user.id == OWNER_ID)
+@bot.message_handler(func=lambda m: m.text == "🧑‍💻 پنل ادمین" and m.from_user.id == OWNER_ID)
 def admin_panel(message):
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("📥 ثبت لینک جدید", callback_data="add_link"))
     markup.add(types.InlineKeyboardButton("📢 پیام به همه", callback_data="broadcast"))
     markup.add(types.InlineKeyboardButton("👥 لیست کاربران", callback_data="list_karbar"))
-    bot.send_message(message.chat.id, "🔧 پنل مدیریت:", reply_markup=markup)
+    bot.send_message(message.chat.id, "🔧 پنل ادمین:", reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: call.data == "auto_contact")
 def auto_contact(call):
     uid, name = call.from_user.id, call.from_user.first_name
     username = call.from_user.username or "ندارد"
     bot.send_message(OWNER_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
-    bot.send_message(call.id, "✅ پیام شما برای مدیریت ارسال شد.")
+    bot.send_message(call.id, "✅ پیام شما برای ادمین فرستاده شد.")
    
 @bot.callback_query_handler(func=lambda call: call.data == "list_karbar")
 def user_list(call):
     if call.from_user.id != OWNER_ID:
-        return bot.answer_callback_query(call.id, "⛔️ دسترسی ندارید.")
+        return bot.answer_callback_query(call.id, "⛔️ دسترسی نداری.")
     text = "👤 لیست کاربران:\n"
     for uid, info in data["users"].items():
         username = info.get("username", "ندارد")
@@ -182,13 +214,13 @@ def user_list(call):
 @bot.callback_query_handler(func=lambda call: call.data == "add_link_user")
 def add_link_user(call):
     uid = call.from_user.id
-    bot.send_message(call.message.chat.id, "لینک کانال خود را ارسال کنید (با @):")
+    bot.send_message(call.message.chat.id, "آیدی کانال یا گروهت رو بفرست (با @):")
     bot.send_message(OWNER_ID, f"📩 link: { call.message } \n {name} (@{username})\n🆔 {uid}")
     #bot.register_next_step_handler(call.message, save_link)
 
 @bot.callback_query_handler(func=lambda call: call.data == "add_link")
 def add_link(call):
-    bot.send_message(call.message.chat.id, "لینک کانال خود را ارسال کنید (با @):")
+    bot.send_message(call.message.chat.id, "لینک کانال درخواستی رو بفرست (با @):")
     bot.register_next_step_handler(call.message, save_link)
 
 def save_link(message):
@@ -211,11 +243,11 @@ def do_broadcast(message):
     sent = 0
     for uid in data["users"]:
         try:
-            bot.send_message(uid, f"📢 پیام مدیریت:\n\n{message.text}")
+            bot.send_message(uid, f"📢 پیام ادمین:\n\n{message.text}")
             sent += 1
         except:
             continue
-    bot.send_message(message.chat.id, f"✅ پیام به {sent} نفر ارسال شد.")
+    bot.send_message(message.chat.id, f"✅ پیام به {sent} نفر فرستاده شد.")
 
 @app.route(WEBHOOK_PATH, methods=["POST"])
 def webhook():
@@ -227,7 +259,7 @@ def webhook():
 
 @app.route("/", methods=["GET"])
 def index():
-    return "ربات فعال است.", 200
+    return "ربات فعال.", 200
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
