@@ -111,11 +111,12 @@ def check_dokme(call):
             data["users"][uid] = user
             save_data(data)
             bot.answer_callback_query(call.id, "✅ عضویت تایید شد و سکه دریافت شد." )
+            bot.send_message(call.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین ارسال بشه ", reply_markup=markup)
         else:
             bot.answer_callback_query(call.id, "✅ قبلاً عضو شدی.")
         bot.send_message(uid, f"💰 سکه فعلی: {user['coins']}")
         
-        bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین ارسال بشه ", reply_markup=markup)
+        
     else:
         bot.answer_callback_query(call.id, "❌ هنوز در همه کانال‌ها عضو نیستید.")
 
