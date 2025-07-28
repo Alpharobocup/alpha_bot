@@ -144,7 +144,8 @@ def check_join(call):
             user["coins"] += COINS_PER_JOIN
             data["users"][uid] = user
             save_data(data)
-            bot.answer_callback_query(call.id, "✅ عضویت تایید شد و سکه دریافت شد." , reply_markup=add_link_user())
+            bot.answer_callback_query(call.id, "✅ عضویت تایید شد و سکه دریافت شد." )
+            bot.send_message(uid , "access link :: " , reply_markup=add_link_user())
         else:
             bot.answer_callback_query(call.id, "✅ قبلاً عضو شده‌اید.")
         bot.send_message(uid, f"💰 سکه فعلی: {user['coins']}")
