@@ -31,7 +31,7 @@ data = load_data()
 
 default_channels = [
     {"title": "AlphaTeam", "username": "alp_question"},
-    {"title": "Lost Waves", "username": "lostwavesea"},
+    #{"title": "Lost Waves", "username": "lostwavesea"},
     #{"title": "Time to Read (C)", "username": "timestoread"},
     {"title": "Time to Read (G) ", "username": "timestoreads"},
     {"title": "Alpha(support)", "username": "Alpha_Development_Team"},
@@ -60,7 +60,7 @@ def start(message):
 
 def main_menu():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add("📢 لیست کانال‌ها", "💰 سکه‌های من", "بررسی")
+    markup.add("📢 لیست کانال‌ها", "💰 سکه‌های من", "✅ بررسی عضویت")
     markup.add("","📄 شرایط و قوانین","ℹ️ اطلاعات"   , "📞 ارتباط با ادمین")
     markup.add("🧑‍💻 پنل ادمین")
     return markup
@@ -87,7 +87,7 @@ def rules_(message):
     """
     bot.send_message(uid , msg )
     #edit_or_send(message.chat.id, msg.strip(), main_menu(), message_id=message.message_id)
-@bot.message_handler(func=lambda m: m.text == "بررسی")
+@bot.message_handler(func=lambda m: m.text == "✅ بررسی عضویت")
 def check_dokme(message):
     uid = str(message.from_user.id)
     user = data["users"].get(uid, {})
