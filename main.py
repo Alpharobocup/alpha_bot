@@ -69,8 +69,10 @@ def main_menu():
 def information_(message):
     uid = str(message.from_user.id)
     msg = (
-        "ربات تبادل اعضا به شما کمک می‌کند با عضویت در کانال‌ها سکه جمع کنید.\n"
-        f"برای هر سری عضویت {COINS_PER_JOIN} سکه می‌گیرید.\nبعد از آن می‌تونید لینک ثبت کنید."
+        "ربات تبادل اعضاتوسط تیم آلفا ساخته شد .\n  "
+        "شما میتونید با عضویت در کانال ها و گروه های ذکر شده توسظ ربات  آیدی گروه و یا کانالتون رو ثبت کنید تا به مدت ۱ روز در این کانال ها گذاشته بشن .\n"
+        "در صورت نیاز میتونید از طریق ارتباط با ادمین اطلاعات بیشتری کسب کنید \n /admin_conect \n"
+        f"برای هر سری عضویت {COINS_PER_JOIN} سکه می‌گیرید.\n"
     )
     bot.send_message(uid , msg )
     #edit_or_send(message.chat.id, msg, main_menu(), message_id=message.message_id)
@@ -122,7 +124,7 @@ def check_dokme(message):
 
 
 
-@bot.message_handler(func=lambda m: m.text == "📞 ارتباط با ادمین")
+@bot.message_handler(func=lambda m: m.text in [ "📞 ارتباط با ادمین" , "/admin_conect"])
 def admins_conect(message):
     uid = str(message.from_user.id)
     markup = types.InlineKeyboardMarkup()
