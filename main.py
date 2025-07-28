@@ -91,8 +91,8 @@ def rules_(message):
 def check_dokme(message):
     uid = str(message.from_user.id)
     user = data["users"].get(uid, {})
-    #markup = types.InlineKeyboardMarkup()
-    #markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
 
     if not user:
         bot.send_message(message.chat.id, "❌ کاربر ناشناس.")
@@ -113,7 +113,7 @@ def check_dokme(message):
             data["users"][uid] = user
             save_data(data)
             bot.send_message(message.chat.id, "✅ عضویت تایید شد و سکه دریافت شد.")
-            #bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین فرستاده بشه", reply_markup=markup)
+            bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین فرستاده بشه", reply_markup=markup)
         else:
             bot.send_message(message.chat.id, "✅ قبلاً عضو شدی.")
         bot.send_message(message.chat.id, f"💰 سکه فعلی: {user['coins']}")
