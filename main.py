@@ -87,7 +87,7 @@ def rules_(message):
     """
     bot.send_message(uid , msg )
     #edit_or_send(message.chat.id, msg.strip(), main_menu(), message_id=message.message_id)
-@bot.message_handler(func=lambda m: m.text == "✅ بررسی عضویت")
+@bot.message_handler(func=lambda m: m.text == "بررسی عضویت ✅")
 def check_dokme(call):
     uid = str(call.from_user.id)
     user = data["users"].get(uid, {})
