@@ -4,8 +4,8 @@ from flask import Flask, request
 import os
 import json
 
-API_TOKEN = os.environ.get("BOT_TOKEN")
-WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
+API_TOKEN = "8428213299:AAHF_qH_yZ_u3cLEbfWVZMz-vaQgBRAqCvQ" #os.environ.get("BOT_TOKEN")
+WEBHOOK_URL = "https://alpha-bot-zkn3.onrender.com"#os.environ.get("WEBHOOK_URL")
 WEBHOOK_PATH = f"/bot{API_TOKEN}"
 
 bot = telebot.TeleBot(API_TOKEN)
