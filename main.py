@@ -169,10 +169,16 @@ def check_join(call):
     markup = types.InlineKeyboardMarkup()
     uid = str(call.from_user.id)
     user = data["users"].get(uid, {})
+    lang = user_language.get(call.from_user.id, "fa")
 
     if not user:
-        bot.answer_callback_query(call.id, "❌ کاربر ناشناس.")
-        bot.send_message(call.message.chat.id, "⛔️ ابتدا /start را بزنید تا ثبت شوید.")
+        text1 = "❌ Unknown user."
+        text2 = "⛔️ Please send /start to register."
+        if lang == "fa":
+            text1 = "❌ کاربر ناشناس."
+            text2 = "⛔️ ابتدا /start را بزنید تا ثبت شوید."
+        bot.answer_callback_query(call.id, text1)
+        bot.send_message(call.message.chat.id, text2)
         return
 
     all_channels = default_channels + data.get("links", [])
@@ -190,101 +196,132 @@ def check_join(call):
             user["coins"] += COINS_PER_JOIN
             data["users"][uid] = user
             save_data(data)
-            bot.answer_callback_query(call.id, "✅ عضویت تایید شد و سکه دریافت شد.")
+            text = "✅ Membership confirmed and coins awarded."
+            if lang == "fa":
+                text = "✅ عضویت تایید شد و سکه دریافت شد."
+            bot.answer_callback_query(call.id, text)
         else:
-            bot.answer_callback_query(call.id, "✅ قبلاً عضو شدی.")
+            text = "✅ You already joined."
+            if lang == "fa":
+                text = "✅ قبلاً عضو شدی."
+            bot.answer_callback_query(call.id, text)
         
-        bot.send_message(call.message.chat.id, f"💰 سکه فعلی: {user['coins']}")
-        markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
-        bot.send_message(call.message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین ارسال بشه", reply_markup=markup)
+        coins_msg = f"💰 Current coins: {user['coins']}" if lang == "en" else f"💰 سکه فعلی: {user['coins']}"
+        bot.send_message(call.message.chat.id, coins_msg)
+        btn_text = "📥 Submit Link" if lang == "en" else "📥 ثبت لینک"
+        markup.add(types.InlineKeyboardButton(btn_text, callback_data="add_link_user"))
+        link_msg = "Click Submit Link to send your link to admin." if lang == "en" else "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین ارسال بشه"
+        bot.send_message(call.message.chat.id, link_msg, reply_markup=markup)
     else:
-        bot.answer_callback_query(call.id, "❌ هنوز در همه کانال‌ها عضو نیستی.")
+        text = "❌ You are not a member of all channels yet."
+        if lang == "fa":
+            text = "❌ هنوز در همه کانال‌ها عضو نیستی."
+        bot.answer_callback_query(call.id, text)
 
 
-
-
-@bot.message_handler(func=lambda m: m.text == "🧑‍💻 پنل ادمین" and m.from_user.id == OWNER_ID)
+@bot.message_handler(func=lambda m: m.text in ["🧑‍💻 Admin Panel", "🧑‍💻 پنل ادمین"] and m.from_user.id == OWNER_ID)
 def admin_panel(message):
+    lang = user_language.get(message.from_user.id, "fa")
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("📥 ثبت لینک جدید", callback_data="add_link"))
-    markup.add(types.InlineKeyboardButton("📢 پیام به همه", callback_data="broadcast"))
-    markup.add(types.InlineKeyboardButton("👥 لیست کاربران", callback_data="list_karbar"))
-    bot.send_message(message.chat.id, "🔧 پنل ادمین:", reply_markup=markup)
+    btn_add_link = "📥 Add New Link" if lang == "en" else "📥 ثبت لینک جدید"
+    btn_broadcast = "📢 Broadcast Message" if lang == "en" else "📢 پیام به همه"
+    btn_user_list = "👥 User List" if lang == "en" else "👥 لیست کاربران"
+    markup.add(types.InlineKeyboardButton(btn_add_link, callback_data="add_link"))
+    markup.add(types.InlineKeyboardButton(btn_broadcast, callback_data="broadcast"))
+    markup.add(types.InlineKeyboardButton(btn_user_list, callback_data="list_karbar"))
+    panel_text = "🔧 Admin Panel:" if lang == "en" else "🔧 پنل ادمین:"
+    bot.send_message(message.chat.id, panel_text, reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: call.data == "auto_contact")
 def auto_contact(call):
     uid, name = call.from_user.id, call.from_user.first_name
     username = call.from_user.username or "ندارد"
-    bot.send_message(OWNER_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
-    bot.send_message(call.id, "✅ پیام شما برای ادمین فرستاده شد.")
+    bot.send_message(OWNER_ID, f"📩 Contact: {name} (@{username})\n🆔 {uid}")
+    lang = user_language.get(call.from_user.id, "fa")
+    confirm_msg = "✅ Your message was sent to admin." if lang == "en" else "✅ پیام شما برای ادمین فرستاده شد."
+    bot.send_message(call.id, confirm_msg)
    
 @bot.callback_query_handler(func=lambda call: call.data == "list_karbar")
 def user_list(call):
     if call.from_user.id != OWNER_ID:
-        return bot.answer_callback_query(call.id, "⛔️ دسترسی نداری.")
-    text = "👤 لیست کاربران:\n"
+        lang = user_language.get(call.from_user.id, "fa")
+        no_access = "⛔️ You don't have access." if lang == "en" else "⛔️ دسترسی نداری."
+        return bot.answer_callback_query(call.id, no_access)
+    text = "👤 User List:\n" if user_language.get(call.from_user.id, "fa") == "en" else "👤 لیست کاربران:\n"
     for uid, info in data["users"].items():
         username = info.get("username", "ندارد")
         text += f"• @{username} - {uid}\n"
-    bot.send_message(call.message.chat.id, text or "❌ کاربری ثبت نشده.")
+    no_user_text = "❌ No registered users." if user_language.get(call.from_user.id, "fa") == "en" else "❌ کاربری ثبت نشده."
+    bot.send_message(call.message.chat.id, text or no_user_text)
 
 @bot.callback_query_handler(func=lambda call: call.data == "add_link_user")
 def add_link_user(call):
-    uid = call.from_user.id
-    bot.send_message(call.message.chat.id, "✅ آیدی کانال یا گروهت رو بفرست (با @):")
+    lang = user_language.get(call.from_user.id, "fa")
+    prompt = "✅ Send your channel or group ID (with @):" if lang == "en" else "✅ آیدی کانال یا گروهت رو بفرست (با @):"
+    bot.send_message(call.message.chat.id, prompt)
     
-    # منتظر پیام بعدی کاربر بمون
-    bot.register_next_step_handler(call.message, forward_link_to_admin, uid)
+    bot.register_next_step_handler(call.message, forward_link_to_admin, call.from_user.id)
 
 
 def forward_link_to_admin(message, uid):
     try:
         username = message.from_user.username or "ندارد"
         name = message.from_user.first_name
-
-        # فوروارد کردن پیام اصلی لینک به مدیر
         bot.forward_message(OWNER_ID, message.chat.id, message.message_id)
-
-        # ارسال پیام جداگانه همراه با اطلاعات کاربر
-        bot.send_message(OWNER_ID, f"👤 از طرف {name} (@{username})\n🆔 {uid}")
-
-        # اطلاع دادن به کاربر
-        bot.send_message(message.chat.id, "✅ لینک شما برای مدیریت ارسال شد.")
+        bot.send_message(OWNER_ID, f"👤 From {name} (@{username})\n🆔 {uid}")
+        lang = user_language.get(message.from_user.id, "fa")
+        confirm = "✅ Your link was sent to the admin." if lang == "en" else "✅ لینک شما برای مدیریت ارسال شد."
+        bot.send_message(message.chat.id, confirm)
     except Exception as e:
-        bot.send_message(message.chat.id, "❌ مشکلی در ارسال لینک پیش آمد.")
-        print(f"خطا در فوروارد لینک: {e}")
+        lang = user_language.get(message.from_user.id, "fa")
+        error_msg = "❌ There was an error sending the link." if lang == "en" else "❌ مشکلی در ارسال لینک پیش آمد."
+        bot.send_message(message.chat.id, error_msg)
+        print(f"Error forwarding link: {e}")
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "add_link")
 def add_link(call):
-    bot.send_message(call.message.chat.id, "لینک کانال درخواستی رو بفرست (با @):")
+    lang = user_language.get(call.from_user.id, "fa")
+    prompt = "Send the requested channel link (with @):" if lang == "en" else "لینک کانال درخواستی رو بفرست (با @):"
+    bot.send_message(call.message.chat.id, prompt)
     bot.register_next_step_handler(call.message, save_link)
 
 def save_link(message):
     if not message.text.startswith("@"):
-        return bot.send_message(message.chat.id, "❌ لینک نامعتبر است.")
+        lang = user_language.get(message.from_user.id, "fa")
+        invalid_msg = "❌ Invalid link." if lang == "en" else "❌ لینک نامعتبر است."
+        return bot.send_message(message.chat.id, invalid_msg)
     data["links"].append({
         "link": message.text,
         "username": message.from_user.username or "ندارد",
         "first_name": message.from_user.first_name
     })
     save_data(data)
-    bot.send_message(message.chat.id, "✅ لینک ثبت شد.")
+    lang = user_language.get(message.from_user.id, "fa")
+    saved_msg = "✅ Link saved." if lang == "en" else "✅ لینک ثبت شد."
+    bot.send_message(message.chat.id, saved_msg)
 
 @bot.callback_query_handler(func=lambda call: call.data == "broadcast")
 def ask_broadcast(call):
-    msg = bot.send_message(call.message.chat.id, "متن پیام برای همه:")
+    lang = user_language.get(call.from_user.id, "fa")
+    prompt = "Message text for everyone:" if lang == "en" else "متن پیام برای همه:"
+    msg = bot.send_message(call.message.chat.id, prompt)
     bot.register_next_step_handler(msg, do_broadcast)
 
 def do_broadcast(message):
     sent = 0
     for uid in data["users"]:
         try:
-            bot.send_message(uid, f"📢 پیام ادمین:\n\n{message.text}")
+            lang = user_language.get(int(uid), "fa")
+            admin_msg = f"📢 Admin message:\n\n{message.text}" if lang == "en" else f"📢 پیام ادمین:\n\n{message.text}"
+            bot.send_message(uid, admin_msg)
             sent += 1
         except:
             continue
-    bot.send_message(message.chat.id, f"✅ پیام به {sent} نفر فرستاده شد.")
+    lang = user_language.get(message.from_user.id, "fa")
+    done_msg = f"✅ Message sent to {sent} users." if lang == "en" else f"✅ پیام به {sent} نفر فرستاده شد."
+    bot.send_message(message.chat.id, done_msg)
+
 
 @app.route(WEBHOOK_PATH, methods=["POST"])
 def webhook():
