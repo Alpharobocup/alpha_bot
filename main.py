@@ -132,7 +132,12 @@ def admins_conect(message):
     markup.add(types.InlineKeyboardButton("ارسال پیام شخصی", url=f"https://t.me/alpha_tteam"))
     bot.send_message(message.chat.id, "یکی از گزینه‌های ارتباط رو انتخاب کن:", reply_markup=markup)
 
-    
+@bot.callback_query_handler(func=lambda call: call.data == "auto_contact")
+def auto_contact(call):
+    uid, name = call.from_user.id, call.from_user.first_name
+    username = call.from_user.username or "ندارد"
+    bot.send_message(OWNER_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
+    bot.send_message(call.id, "✅ پیام شما برای ادمین فرستاده شد.")    
 
 @bot.message_handler(func=lambda m: m.text in [ "📢 لیست کانال‌ها" , "/channel_list"] )
 def list_channels(message):
@@ -205,12 +210,7 @@ def admin_panel(message):
     markup.add(types.InlineKeyboardButton("👥 لیست کاربران", callback_data="list_karbar"))
     bot.send_message(message.chat.id, "🔧 پنل ادمین:", reply_markup=markup)
 
-@bot.callback_query_handler(func=lambda call: call.data == "auto_contact")
-def auto_contact(call):
-    uid, name = call.from_user.id, call.from_user.first_name
-    username = call.from_user.username or "ندارد"
-    bot.send_message(OWNER_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
-    bot.send_message(call.id, "✅ پیام شما برای ادمین فرستاده شد.")
+
    
 @bot.callback_query_handler(func=lambda call: call.data == "list_karbar")
 def user_list(call):
