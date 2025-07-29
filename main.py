@@ -50,9 +50,9 @@ def edit_or_send(chat_id, text, markup=None, message_id=None):
 @bot.message_handler(commands=["start"])
 def start(message):
     uid = str(message.from_user.id)
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+    #if is_banned(message.from_user.id, message.from_user.username):
+        #bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
+        #return
     if uid not in data["users"]:
         data["users"][uid] = {
             "username": message.from_user.username or "ندارد",
