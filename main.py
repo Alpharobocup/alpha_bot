@@ -105,7 +105,6 @@ def check_dokme(message):
     uid = str(message.from_user.id)
     user = data["users"].get(uid, {})
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
 
     if not user:
         bot.send_message(message.chat.id, "❌ کاربر ناشناس.")
@@ -176,9 +175,9 @@ def is_member(channel_username, user_id):
 
 @bot.callback_query_handler(func=lambda call: call.data == "check_join")
 def check_join(call):
-    markup = types.InlineKeyboardMarkup()
-    uid = str(call.from_user.id)
+    uid = str(message.from_user.id)
     user = data["users"].get(uid, {})
+    markup = types.InlineKeyboardMarkup()
 
     if not user:
         bot.send_message(message.chat.id, "❌ کاربر ناشناس.")
@@ -188,7 +187,6 @@ def check_join(call):
 
     all_channels = default_channels + data.get("links", [])
     all_ok = True
-
     for ch in all_channels:
         username = ch["username"] if "username" in ch else ch["link"].lstrip("@")
         if not is_member(username, int(uid)):
