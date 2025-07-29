@@ -180,7 +180,7 @@ def check_join(call):
     if not user:
         bot.send_message(call.id, "❌ کاربر ناشناس.")
         bot.answer_callback_query(call.id, "❌ کاربر ناشناس.")
-        bot.send_message(call.message.chat.id, "⛔️ ابتدا /start را بزنید تا ثبت شوید.")
+        bot.send_message(call.id, "⛔️ ابتدا /start را بزنید تا ثبت شوید.")
         return
 
     all_channels = default_channels + data.get("links", [])
