@@ -75,13 +75,13 @@ def information_(message):
         f"برای هر سری عضویت {COINS_PER_JOIN} سکه می‌گیرید.\n"
     )
     msg1 = (
-    " *** || دستورات کاربردی || *** : \n "
-    "**مشاهده لیست کانال ها** : \n /channel_list "
-    "**مشاهده تعداد سکه های موجود برای شما**  : \n /My_coins"
-    "**ارتباط با ادمین** : \n /admin_conect"
-    "**بررسی عضویت در کانال  ها** : \n /Membership_check"
-    "**اطلاعات مربوط به ربات (( همین بخش ))** : \n /information"
-    "**شرایط استفاده از ربات / قوانین** : \n /rules"
+    " *** || دستورات کاربردی || ***_ : \n "
+    "**مشاهده لیست کانال ها**_ : \n- /channel_list \n"
+    "**مشاهده تعداد سکه های موجود برای شما**_  : \n- /My_coins \n"
+    "**ارتباط با ادمین**_ : \n- /admin_conect \n"
+    "**بررسی عضویت در کانال  ها**_ : \n- /Membership_check \n"
+    "**اطلاعات مربوط به ربات (( همین بخش ))**_ : \n- /information \n"
+    "**شرایط استفاده از ربات / قوانین**_ : \n- /rules \n"
     )
     bot.send_message(uid , msg )
     bot.send_message(uid , msg1 )
@@ -148,12 +148,7 @@ def admins_conect(message):
     markup.add(types.InlineKeyboardButton("ارسال پیام شخصی", url=f"https://t.me/alpha_tteam"))
     bot.send_message(message.chat.id, "یکی از گزینه‌های ارتباط رو انتخاب کن:", reply_markup=markup)
 
-@bot.callback_query_handler(func=lambda call: call.data == "auto_contact")
-def auto_contact(call):
-    uid, name = call.from_user.id, call.from_user.first_name
-    username = call.from_user.username or "ندارد"
-    bot.send_message(OWNER_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
-    bot.send_message(call.id, "✅ پیام شما برای ادمین فرستاده شد.")    
+
 
 @bot.message_handler(func=lambda m: m.text in [ "📢 لیست کانال‌ها" , "/channel_list"] )
 def list_channels(message):
@@ -218,7 +213,12 @@ def check_join(call):
         bot.send_message(message.chat.id, "❌ هنوز در همه کانال‌ها عضو نشدی.")
         bot.answer_callback_query(call.id, "❌ هنوز در همه کانال‌ها عضو نیستی.")
 
-
+@bot.callback_query_handler(func=lambda call: call.data == "auto_contact")
+def auto_contact(call):
+    uid, name = call.from_user.id, call.from_user.first_name
+    username = call.from_user.username or "ندارد"
+    bot.send_message(OWNER_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
+    bot.send_message(call.id, "✅ پیام شما برای ادمین فرستاده شد.")    
 
 
 @bot.message_handler(func=lambda m: m.text in ["🧑‍💻 پنل ادمین", "/admin_panel"] and m.from_user.id == OWNER_ID )
