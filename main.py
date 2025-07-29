@@ -109,6 +109,8 @@ def check_dokme(message):
 
     if not user:
         bot.send_message(message.chat.id, "❌ کاربر ناشناس.")
+        bot.answer_callback_query(call.id, "❌ کاربر ناشناس.")
+        bot.send_message(call.message.chat.id, "⛔️ ابتدا /start را بزنید تا ثبت شوید.")
         return
 
     all_channels = default_channels + data.get("links", [])
@@ -126,14 +128,17 @@ def check_dokme(message):
             data["users"][uid] = user
             save_data(data)
             bot.send_message(message.chat.id, "✅ عضویت تایید شد و سکه دریافت شد.")
-            bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین فرستاده بشه", reply_markup=markup)
+            bot.answer_callback_query(call.id, "✅ عضویت تایید شد و سکه دریافت شد.") 
         else:
             bot.send_message(message.chat.id, "✅ قبلاً عضو شدی.")
+            bot.answer_callback_query(call.id, "✅ قبلاً عضو شدی.")
         bot.send_message(message.chat.id, f"💰 سکه فعلی: {user['coins']}")
+        markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
+        bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین فرستاده بشه", reply_markup=markup)
     else:
         bot.send_message(message.chat.id, "❌ هنوز در همه کانال‌ها عضو نشدی.")
-
-
+        bot.answer_callback_query(call.id, "❌ هنوز در همه کانال‌ها عضو نیستی.")
+            
 
 @bot.message_handler(func=lambda m: m.text in [ "📞 ارتباط با ادمین" , "/admin_conect"])
 def admins_conect(message):
@@ -181,6 +186,7 @@ def check_join(call):
     user = data["users"].get(uid, {})
 
     if not user:
+        bot.send_message(message.chat.id, "❌ کاربر ناشناس.")
         bot.answer_callback_query(call.id, "❌ کاربر ناشناس.")
         bot.send_message(call.message.chat.id, "⛔️ ابتدا /start را بزنید تا ثبت شوید.")
         return
@@ -200,14 +206,16 @@ def check_join(call):
             user["coins"] += COINS_PER_JOIN
             data["users"][uid] = user
             save_data(data)
-            bot.answer_callback_query(call.id, "✅ عضویت تایید شد و سکه دریافت شد.")
+            bot.send_message(message.chat.id, "✅ عضویت تایید شد و سکه دریافت شد.")
+            bot.answer_callback_query(call.id, "✅ عضویت تایید شد و سکه دریافت شد.") 
         else:
+            bot.send_message(message.chat.id, "✅ قبلاً عضو شدی.")
             bot.answer_callback_query(call.id, "✅ قبلاً عضو شدی.")
-        
-        bot.send_message(call.message.chat.id, f"💰 سکه فعلی: {user['coins']}")
+        bot.send_message(message.chat.id, f"💰 سکه فعلی: {user['coins']}")
         markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
-        bot.send_message(call.message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین فرستاده بشه", reply_markup=markup)
+        bot.send_message(message.chat.id, "روی ثبت لینک کلیک کن تا لینک ارسالی برای ادمین فرستاده بشه", reply_markup=markup)
     else:
+        bot.send_message(message.chat.id, "❌ هنوز در همه کانال‌ها عضو نشدی.")
         bot.answer_callback_query(call.id, "❌ هنوز در همه کانال‌ها عضو نیستی.")
 
 
