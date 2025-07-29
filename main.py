@@ -71,9 +71,7 @@ def main_menu():
 @bot.message_handler(func=lambda m: m.text in [ "ℹ️ اطلاعات" , "/information"])  
 def information_(message):
     uid = str(message.from_user.id)
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+   
     msg = (
         "ربات تبادل اعضاتوسط تیم آلفا ساخته شد .\n  "
         "شما میتونید با عضویت در کانال ها و گروه های ذکر شده توسظ ربات  آیدی گروه و یا کانالتون رو ثبت کنید تا به مدت ۱ روز در این کانال ها گذاشته بشن .\n"
@@ -97,9 +95,7 @@ def information_(message):
 @bot.message_handler(func=lambda m: m.text in ["📄 شرایط و قوانین" , "/rules"])
 def rules_(message):
     uid = str(message.from_user.id)
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+   
     msg = """
     📜 شرایط استفاده:
      
@@ -112,9 +108,7 @@ def rules_(message):
 @bot.message_handler(func=lambda m: m.text in [ "✅ بررسی عضویت" ,"/Membership_check"])
 def check_dokme(message):
     uid = str(message.from_user.id)
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+    
     user = data["users"].get(uid, {})
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("📥 ثبت لینک", callback_data="add_link_user"))
@@ -150,9 +144,7 @@ def check_dokme(message):
 @bot.message_handler(func=lambda m: m.text in [ "📞 ارتباط با ادمین" , "/admin_conect"])
 def admins_conect(message):
     uid = str(message.from_user.id)
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+    
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("ارسال پیام خودکار", callback_data="auto_contact"))
     markup.add(types.InlineKeyboardButton("ارسال پیام شخصی", url=f"https://t.me/alpha_tteam"))
@@ -163,9 +155,7 @@ def admins_conect(message):
 @bot.message_handler(func=lambda m: m.text in [ "📢 لیست کانال‌ها" , "/channel_list"] )
 def list_channels(message):
     markup = types.InlineKeyboardMarkup()
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+    
 
     for ch in default_channels:
         markup.add(types.InlineKeyboardButton(ch["title"], url=f"https://t.me/{ch['username']}"))
@@ -176,9 +166,7 @@ def list_channels(message):
 
 @bot.message_handler(func=lambda m: m.text in [ "💰 سکه‌های من" , "/My_coins"])
 def show_coins(message):
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+    
     uid = str(message.from_user.id)
     coins = data["users"].get(uid, {}).get("coins", 0)
     bot.send_message(message.chat.id, f"💰 سکه‌های شما: {coins}")
@@ -195,9 +183,7 @@ def is_member(channel_username, user_id):
 def check_join(call):
     markup = types.InlineKeyboardMarkup()
     uid = str(call.from_user.id)
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+    
     user = data["users"].get(uid, {})
 
     if not user:
@@ -233,9 +219,7 @@ def check_join(call):
 @bot.callback_query_handler(func=lambda call: call.data == "auto_contact")
 def auto_contact(call):
     uid, name = call.from_user.id, call.from_user.first_name
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+    
     username = call.from_user.username or "ندارد"
     bot.send_message(OWNER_ID, f"📩 ارتباط: {name} (@{username})\n🆔 {uid}")
     bot.send_message(call.id, "✅ پیام شما برای ادمین فرستاده شد.")    
@@ -243,9 +227,7 @@ def auto_contact(call):
 
 @bot.message_handler(func=lambda m: m.text in ["🧑‍💻 پنل ادمین", "/admin_panel"] and m.from_user.id == OWNER_ID )
 def admin_panel(message):
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+    
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("📥 ثبت لینک جدید", callback_data="add_link"))
     markup.add(types.InlineKeyboardButton("📢 پیام به همه", callback_data="broadcast"))
@@ -259,9 +241,7 @@ def user_list(call):
     if call.from_user.id != OWNER_ID:
         return bot.answer_callback_query(call.id, "⛔️ دسترسی نداری.")
 
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+   
     text = "👤 لیست کاربران:\n"
     for uid, info in data["users"].items():
         username = info.get("username", "ندارد")
@@ -271,9 +251,7 @@ def user_list(call):
 @bot.callback_query_handler(func=lambda call: call.data == "add_link_user")
 def add_link_user(call):
     uid = call.from_user.id
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+    
     bot.send_message(call.message.chat.id, "✅ آیدی کانال یا گروهت رو بفرست (با @):")
     
     # منتظر پیام بعدی کاربر بمون
@@ -300,9 +278,7 @@ def forward_link_to_admin(message, uid):
 
 @bot.callback_query_handler(func=lambda call: call.data == "add_link")
 def add_link(call):
-    if is_banned(message.from_user.id, message.from_user.username):
-        bot.send_message(message.chat.id, "⛔ شما توسط مدیریت مسدود شده‌اید.")
-        return
+    
     bot.send_message(call.message.chat.id, "لینک کانال درخواستی رو بفرست (با @):")
     bot.register_next_step_handler(call.message, save_link)
 
