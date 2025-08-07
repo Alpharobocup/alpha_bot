@@ -147,7 +147,7 @@ def admins_conect(message):
     
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("ارسال پیام خودکار", callback_data="auto_contact"))
-    markup.add(types.InlineKeyboardButton("ارسال پیام شخصی", url=f"https://t.me/alpha_tteam"))
+    markup.add(types.InlineKeyboardButton("ارسال پیام شخصی", url=f"https://t.me/Mr_101a"))
     bot.send_message(message.chat.id, "یکی از گزینه‌های ارتباط رو انتخاب کن:", reply_markup=markup)
 
 
